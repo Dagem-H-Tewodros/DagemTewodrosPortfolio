@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>E-Commerce Sales</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>E-Commerce Data Analysis: Revenue, Customer Segmentation, and Sales Insights</h1>
+							<p class="tools-header">Tools used:</p>
+                			<p class="tools-item">MySQL: <a href="https://github.com/Dagem-H-Tewodros/E-Commerce-Data-Analysis-Revenue-Customer-Segmentation-and-Sales-Insights.git">Data Cleaning and Exploration</a></p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/E-Commerce-Data-Analysis-Revenue-Customer-Segmentation-and-Sales-Insights.git">Segmentation Analysis</a></p>
+               				<p class="tools-item">Powerbi: <a href="https://app.powerbi.com/view?r=eyJrIjoiODFkYzBjN2UtMWMwYi00MzQxLWExOTItMWQzNjQ4MDJiMGQwIiwidCI6IjQ3NmZjNmYxLTc0YjYtNDBiMS1hNjEzLWNhOTA2MmY5YzM1MyJ9&pageName=c775a3abf1178bf8ca4e">Dashboard</a></p>
+							<p>In the highly competitive world of e-commerce, data is the cornerstone of uncovering hidden opportunities and driving business growth. My journey began with an extensive dataset from an online retail platform, comprising over 500,000+ transactions. Through meticulous data cleaning and analysis using MySQL, I ensured the accuracy and reliability of the dataset. Cluster analysis was then performed using Python to segment customers, revealing key insights into their behavior. Finally, I visualized the findings in Power BI, providing a clear and actionable understanding of the business landscape.</p>
+							<div style="display: flex; justify-content: center; margin: 20px 0;">
+								<iframe title="E-Commerce Dashboard" width="1024" height="612" src="https://app.powerbi.com/view?r=eyJrIjoiODFkYzBjN2UtMWMwYi00MzQxLWExOTItMWQzNjQ4MDJiMGQwIiwidCI6IjQ3NmZjNmYxLTc0YjYtNDBiMS1hNjEzLWNhOTA2MmY5YzM1MyJ9&pageName=c775a3abf1178bf8ca4e" frameborder="0" allowFullScreen="true"></iframe>
+							</div>							
+							<p><b>Data Cleaning</b></p>
+							<p>The first critical step was ensuring the accuracy and reliability of the data. I identified several anomalies, such as transactions with negative quantities and prices, likely due to returns, discounts, or data entry errors. These anomalies had the potential to distort the analysis significantly. By correcting the negative quantities to reflect positive values and adjusting the negative prices to reflect actual sale prices, I ensured that the dataset accurately represented true sales figures, thereby providing a sound basis for the analysis.</p>
+							<p>Next, I tackled the invoice dates. Initially stored in a jumbled text format, these dates were transformed into a standardized format, paving the way for precise time-based analysis. During this process, it uncovered a few date anomalies—transactions recorded on seemingly impossible dates. Correcting these discrepancies was akin to setting our time machine straight, allowing us to navigate the timeline of sales with accuracy.</p>
+							<p>In addition to these corrections, I recognized the need to categorize products based on their descriptions to simplify visualization and analysis. By creating a new category column, I categorized products into groups like "Storage & Organization," "Lighting," "Home Decor," and others. This was achieved by analyzing keywords within product descriptions. For example, items with descriptions containing words like "hanger," "hook," or "rack" were categorized as "Storage & Organization," while those mentioning "lantern," "light," "lamp," or "candle" were grouped under "Lighting." This categorization not only organized the data but also provided deeper insights into product performance across different categories.</p>
+							<p>I also identified entries with a unit price of zero, which could distort our revenue calculations. These zero-priced items, possibly indicative of promotional giveaways or errors, were removed. This step was crucial to ensure that our analysis would be based on genuine sales transactions, providing a clear and honest picture of our revenue stream.</p>
+							<p><b>Data Analysis</b></p>
+							<p>With a clean and reliable dataset, I conducted an in-depth analysis, beginning with the calculation of total sales revenue. The analysis revealed a robust total of approximately 11.35 million dollars, underscoring the platform's strong market presence. However, I recognized the need to delve deeper to uncover the underlying factors driving these numbers.</p>
+							<p>Failed transactions emerged as a significant area of concern. Identified by invoices beginning with 'C', these cancellations represented a substantial loss of revenue. I calculated that these failed transactions amounted to approximately £542,000, highlighting a critical area for improvement. Understanding and addressing the causes of these cancellations could potentially recover significant revenue.</p>
+							<p>A closer examination of the products most frequently involved in failed transactions revealed that the "Dotcomgiftshop Vintage Doily Cotton Bunting" was a major contributor to the lost revenue. This insight pointed to specific products that warranted further scrutiny to understand and mitigate the reasons behind their higher cancellation rates.</p>
+							<p>Focusing on successful transactions, I calculated the net sales revenue, which, after excluding failed transactions, amounted to approximately £10,808,000. This figure provided a more accurate reflection of the platform's earnings, essential for assessing the true economic impact of e-commerce activities.</p>
+							<p>Next, I analyzed product performance, identifying the "White Hanging Heart T-Light Holder" as the highest revenue-generating product. This item was clearly a favorite among customers. Understanding consumer preferences for top-selling products is crucial for guiding inventory management and refining marketing strategies.</p>
+							<p>A geographic analysis of transaction distribution revealed that the United Kingdom, the platform's home market, was the most active, accounting for the majority of transactions. This insight suggests the need for region-specific strategies to further enhance sales in high-performing areas, capitalizing on the platform's strong market presence.</p>
+							<p>I also analyzed the average order value per customer and by country, which provided deeper insights into purchasing behavior. The average order value per customer was approximately £21, with countries like Singapore (146), the Netherlands (118), Japan, and Australia (108) displaying the highest average order values. These markets present significant opportunities for targeted marketing campaigns and loyalty programs aimed at maximizing customer engagement and revenue.</p>
+							<p>Identifying the most loyal customers was another key focus. One particularly notable frequent buyer made an impressive 210 transactions, spending a total of approximately £48,000. Recognizing and rewarding such loyalty is critical for sustaining long-term business success and enhancing customer satisfaction.</p>
+							<p>I then performed an analysis of customer behavior by calculating revenue, frequency, and monetary (RFM) values for each customer. Recency refers to how recently a customer made a purchase, with lower values indicating more recent activity. Frequency measures how often a customer makes purchases, with higher values signifying more frequent transactions. Monetary represents the total amount a customer has spent, where higher values indicate greater spending.</p>
+							<p>After standardizing these values and applying the K-means clustering method, four distinct customer segments were revealed:</p>
+							<div style="margin-left: 40px; line-height: 1.5em;">
+							<p>•	Cluster 0: Contained 3,169 out of the 4,373 customers. These customers had recent activity (low recency)  but exhibited low-frequency and low-monetary behavior. They made recent purchases but did not buy frequently and spent relatively little. This segment may represent new or occasional buyers who could be nurtured to increase their frequency and spending.</p>
+							<p>•	Cluster 1: Included 1,087 customers characterized by less recent activity (higher recency)  and low-frequency and low-monetary behavior. These customers had not made recent purchases, bought infrequently, and spent little, indicating a segment at risk of churn that might require re-engagement strategies.</p>
+							<p>•	Cluster 2: Comprised 111 customers who were recent (low recency), with high frequency and high monetary behavior. This group indicates high loyalty and significant value, representing your best customers who frequently engage and spend substantially.</p>
+							<p>•	Cluster 3: Contained 6 customers identified as very recent (very low recency), medium-frequency, and extremely high-monetary spenders. These customers made very recent purchases, bought moderately frequently, and spent an exceptionally high amount, making them the most valuable segment. This group likely represents VIP customers who contribute significantly to revenue and should be prioritized for retention and special offers.</p>
+							</div>
+							<p>Lastly, I examined daily sales patterns, calculating both total and average daily revenue. The average daily revenue was approximately $37,200, with peak sales periods typically occurring during the holiday season.</p>
+							<p></p>
+							<p></p>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

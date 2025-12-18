@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<!--
+    Phantom by HTML5 UP
+    html5up.net | @ajlkn
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+<head>
+    <title>AWS Sales Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+    <style>
+        .overview-header {
+            font-weight: bold;
+            font-size: 2.00em;
+            line-height: 1.0;
+        }
+        .subtitle-header {
+            font-weight: normal;
+            font-size: 2.00em;
+            line-height: 1.0;
+        }
+        .tools-header {
+            font-weight: bold;
+            font-size: 1.25em;
+            line-height: 1.0;
+        }
+        .tools-item {
+            font-weight: bold;
+            margin-left: 70px;
+            line-height: 1.0;
+        }
+        .tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="is-preload">
+    <!-- Wrapper -->
+    <div id="wrapper">
+
+        <!-- Header -->
+        <header id="header">
+            <div class="inner">
+
+                <!-- Logo -->
+                <a href="index.html" class="logo">
+                    <span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+                </a>
+
+                <!-- Nav -->
+                <nav>
+                    <ul>
+                        <li><a href="#menu">Menu</a></li>
+                    </ul>
+                </nav>
+
+            </div>
+        </header>
+
+        <!-- Menu -->
+        <nav id="menu">
+            <h2>Menu</h2>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="About Me.html">About Me</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main -->
+        <div id="main">
+            <div class="inner">
+                <h1>Amazon Web Services Revenue Trends and SaaS Metrics Insights</h1> 
+                <p class="subtitle-header"> Insights on Revenue, Churn, and Customer Engagement of Amazon Web Services </p>
+                <p class="tools-header">Tools used:</p>
+                <p class="tools-item">MySQL: <a href="https://github.com/Dagem-H-Tewodros/Amazon-Web-Service-Revenue-and-SaaS-Metrics-Analysis.git">SQL Scripts</a></p>
+                <p class="tools-item">Tableau: <a href="https://public.tableau.com/views/AmazonWebServicesSaasOverview/AWSSalesSummary?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link">Worksheet</a></p>
+                <p>Data is central to informed decision-making in the ever-vibrant setting that is Amazon Web Services. To begin with, there was a lot of chaos with our sales records and a clear mission; we were supposed to make it easy for people to understand such information by carefully extracting, transforming and loading it.</p>
+                <div class='tableauPlaceholder' id='viz1726683876150' style='position: relative; margin-left: -100px;'><noscript><a href='#'><img alt='AWS Sales | Summary ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Am&#47;AmazonWebServicesSaasOverview&#47;AWSSalesSummary&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='AmazonWebServicesSaasOverview&#47;AWSSalesSummary' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Am&#47;AmazonWebServicesSaasOverview&#47;AWSSalesSummary&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /><param name='filter' value='publish=yes' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1726683876150');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='1400px';vizElement.style.height='827px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='1400px';vizElement.style.height='827px';} else { vizElement.style.width='100%';vizElement.style.height='3877px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+                <p> </p>
+                <p> </p>
+                <p class="overview-header">Overview</p>
+                <p>To get started, we extracted important elements from the data set such as employee details, order dates, product names and customer information; this laid the foundation for an efficient process. We then normalized the data by creating an employees table and assigning unique employee_ids using DENSE_RANK so as to eliminate redundancies like duplicate entries and also give the concise sequence of identifiers. <b>Normalizing</b> the original monolithic table reduced redundancy and preserved dependencies thus bringing it to <b>2<sup>nd</sup> normal form</b> with full functional dependency including assignment of primary keys and foreign ones.</p>
+                <p>Relying on a structured base required cleansing of data. For instance, through employing INV which was just temporary tables dealt with duplicated records while formats were standardized apart from correcting encoding errors of special characters as though polishing uncut stones to get transparent clear pieces. It was later loaded into tableau after ETL phase.</p>
+                <p><b>Exploratory analysis</b> revealed patterns and trends. The “<u>Marketing Suite</u>”and “<u>FinanceHub</u>” were particularly popular in the UK and Germany among other products. Sales of the Marketing Suite – Gold showed a preference for premium solutions. As much as profits are highly associated with high sales volumes, profit outcomes are significantly impacted by discounts like those found with ContactMatcher.</p>
+                <p>Market dynamics were discovered through country-specific data. In the UK, FinanceHub correlated with a strong presence of financial sector while Germany's energy sector clients preferred Marketing Suite, for instance Royal Dutch Shell. A diverse market landscape emerged in the United States with varying preferences.</p>
+                <p>A continuous surge was seen in quarterly sales during Q2 and Q4 which was influenced by fiscal year planning and end-of-year budget utilization. Additionally, strategic timing for product launches and marketing campaigns at these periods might take advantage of peak buying times. Sales volumes were heavily affected by promotional activities.</p>
+                <p>An exploration of <b>SaaS (Software as a Service) metrics</b> has unveiled critical insights into customer engagement and the overall health of the business. A key area of focus is the <b>Annual churn rate</b>, which currently stands at 13.62% ,substantially higher than the industry average of 5-7% for the SaaS B2B sector. This elevated churn rate signals a pressing need to enhance customer retention strategies.</p>
+                <p>The impact of churn is evident in the estimated $148,000 in lost revenue due to churned customers, a figure that highlights the direct effect of customer attrition on the bottom line. Retention is not only crucial for sustaining revenue but also for maximizing upsell opportunities, especially among customers already invested in premium products, such as the "Marketing Suite - Gold" and "FinanceHub."</p>
+                <p>On a more positive note, the <b>Average Revenue per Customer (ARPC)</b> is $2,890, indicating strong customer engagement and substantial investment in the offerings, reflecting the value customers place on the products, particularly the higher-tier products (Contact Matcher, FinanceHub, Site Analytics).</p>
+                <p>Moreover, the <b>Average Customer Lifespan</b> is 2.7 years (or 31 months), based on data collected over 48 months of operation. This lifespan, coupled with an <b>Average Customer Lifetime Value</b> (CLTV) of $7,662, underscores the long-term revenue potential of each customer.</p>
+                <p>The data paints a clear picture: while the product offerings are driving significant revenue per customer, the high churn rate is a critical challenge that must be addressed to safeguard and grow the business. Prioritizing customer retention efforts through improved customer service, enhanced product offerings, and targeted engagement strategies will be essential in reducing churn, extending customer lifespan, and ultimately driving greater profitability.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer id="footer">
+            <div class="inner">
+                <section>
+                    <h2>Get in touch</h2>
+                    <form method="post" action="https://formspree.io/f/mrbzwany">
+                        <div class="fields">
+                            <div class="field half">
+                                <input type="text" name="name" id="name" placeholder="Name" required />
+                            </div>
+                            <div class="field half">
+                                <input type="email" name="email" id="email" placeholder="Email" required />
+                            </div>
+                            <div class="field">
+                                <textarea name="message" id="message" placeholder="Message" required></textarea>
+                            </div>
+                        </div>
+                        <ul class="actions">
+                            <li><input type="submit" value="Send" class="primary" /></li>
+                        </ul>
+                    </form>
+                </section>
+                <section>
+                    <h2>Follow</h2>
+                    <ul class="icons">
+                        <li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+                    </ul>
+                </section>
+                <ul class="copyright">
+                    <li>&copy; Untitled. All rights reserved</li></li>
+                </ul>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+
+</body>
+</html>

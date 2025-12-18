@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>New York Real Estate Price Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>New York City Real Estate Analysis</h1>
+							<p>In the dynamic and competitive landscape of New York's real estate market, understanding the underlying trends and patterns is essential for making informed decisions. To gain deeper insights into this market, I embarked on a data analysis journey, leveraging a dataset scraped from Zillow, one of the most comprehensive sources of real estate information. The goal was to transform raw data into actionable insights, guiding potential buyers, sellers, and real estate professionals through the complexities of the market.</p>
+							<p class="tools-header">Tools used:</p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/NYC-Real-Estate-Analysis.git">GitHub</a></p>
+							<span class="image main"><img src="images/Skyline.jpeg" alt="" /></span>
+							<p><b>Data Cleaning and Preparation</b></p>
+							<p>The project began with an extensive data cleaning and preparation phase, a critical step in ensuring the reliability and accuracy of the analysis. Despite the dataset being complete with no missing values, several challenges needed to be addressed. For instance, broker titles in the data often included prefixes like "Brokered by," which were removed to standardize the information. Similarly, property types that included suffixes such as "for sale" were cleaned for uniformity. These seemingly small adjustments were crucial in ensuring consistency across the dataset, making the subsequent analysis more reliable.</p>
+							<p><b>Standardizing Data for Consistency</b></p>
+							<p>One of the more complex tasks involved converting data types to enable accurate numerical analysis. For example, the number of bathrooms, initially recorded as strings, was converted into integers. This conversion was essential for performing precise mathematical operations, such as calculating averages and conducting statistical tests. Additionally, the geographical data required careful handling. Neighborhoods like "Brooklyn" were standardized to their corresponding counties, such as "Kings County," to ensure that regional comparisons were both accurate and meaningful.</p>
+							<p><b>Exploratory Data Analysis</b></p>
+							<p>With the data meticulously prepared, I moved on to exploratory data analysis (EDA), uncovering key insights into New York's real estate market. The dataset comprised 4,801 property listings, revealing an average property price of approximately $2.36 million. The diversity of the market was evident in the wide range of property sizes, from modest 230 square foot apartments to sprawling estates exceeding 65,000 square feet. The number of bedrooms and bathrooms also varied significantly, with properties offering anywhere from 1 to 50 bedrooms and an equal range for bathrooms.</p>
+							<p><b>Analyzing Property Price Distribution</b></p>
+							<p>A deeper dive into the data revealed a skewed distribution of property prices. While a few ultra-luxury properties with exorbitant prices skewed the mean upward, the majority of listings fell within a more typical price range, reflecting the market's inclusivity of both luxury and more affordable options. Outliers were identified in terms of the number of bedrooms and bathrooms as well, with properties featuring more than 10 bedrooms or bathrooms being flagged. These outliers, often multi-family homes or luxury townhouses, catered to specific, niche segments of the market.</p>
+							<p><b>Understanding Broker Market Share</b></p>
+							<p>Broker market share was another focus of the analysis, revealing the competitive dynamics among New York's real estate brokers. COMPASS emerged as the dominant player, handling nearly 9.5% of all listings in the dataset, far outpacing other significant brokers like Douglas Elliman and Brown Harris Stevens. This concentration of market power among a few key players highlighted the intense competition within the industry and provided valuable insights into broker strategies and market positioning.</p>
+							<p><b>Modeling </b>: From Simple Regression to Advanced Techniques</p>
+							<p>With a solid understanding of the data, I transitioned to the modeling phase, aiming to predict property prices with high accuracy. The initial model, a simple linear regression, served as a baseline. It revealed that about 46.5% of the variance in property prices could be explained by the features in the dataset, such as the number of bedrooms, bathrooms, square footage, and geographical coordinates. However, there was ample room for improvement.</p>
+							<p><b>Enhancing the Model with Polynomial Features</b></p>
+							<p>To enhance the model's performance, I incorporated polynomial features, allowing the model to capture non-linear relationships between variables. This refinement, combined with feature selection techniques, improved the model's predictive power, increasing the R-squared value to 50.2%. However, the real breakthrough came with the implementation of a Gradient Boosting Regressor (GBR), a sophisticated machine learning technique known for its ability to handle complex data and produce accurate predictions.</p>
+							<p><b>Achieving High Accuracy with Gradient Boosting Regressor</b></p>
+							<p>The GBR model was rigorously tested using 10-fold cross-validation, a method that assesses the model's performance across different subsets of the data. The results were impressive, with the model achieving an average R-squared value of 78.4% and a low standard deviation of 0.052, indicating consistent performance across various data splits. This high level of accuracy underscored the model's potential as a reliable tool for predicting property prices in New York's diverse and ever-changing market.</p>
+							<p><b>Application and Visualization</b>: Bringing the Model to Life</p>
+							<p>To make the model’s capabilities more accessible, I developed a user-friendly script that allows users to input their own property features and receive a price prediction. For example, a property with 5 bedrooms, 4 bathrooms, and 1,500 square feet in Manhattan might be predicted to have a price around $4.6 million, while a similar property in Brooklyn could be valued closer to $1.2 million. These predictions were validated through an Actual vs. Predicted Price plot, which showed a strong correlation between the model's predictions and the actual market prices.</p>
+							<p><b>Scatter Plot Analysis</b>: Identifying Areas for Improvement</p>
+							<p>However, the analysis of the scatter plot revealed some areas for further improvement. While the model performed well for the majority of properties, it showed a tendency to underestimate or overestimate prices for higher-end properties. This variability suggested that the model could benefit from additional refinement, such as incorporating more nuanced features like neighborhood amenities or historical price trends, which might influence property values more subtly.</p>
+							<p><b>Conclusion</b>: Insights and Future Directions</p>
+							<p>This data science project offered a deep dive into the New York real estate market, uncovering the wide range of properties available and the fierce competition among brokers. It was a journey that took us from raw data to a powerful predictive model, demonstrating just how effective data science can be in untangling the complexities of a market like this. The final model, a Gradient Boosting Regressor, proved to be highly accurate, making it an invaluable tool for anyone involved in New York real estate—whether you're a buyer, seller, or industry professional. Looking ahead, there's room to make the model even better. By adding more data sources and refining the features we already have, we could achieve even greater accuracy and provide insights that are even more actionable.</p>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
