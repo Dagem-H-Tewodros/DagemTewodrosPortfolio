@@ -1,0 +1,984 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>New York Real Estate Price Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+			pre {
+   				 background: #f6f8fa;
+    			padding: 15px;
+    			border-radius: 8px;
+    			overflow-x: auto;
+   				 font-size: 14px;
+				}
+
+			code {
+    			font-family: Consolas, monospace;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Building Predictive Models for Insurance Claims: A Two-Stage Approach to Claim Probability and Severity</h1>
+							<p><i>A comprehensive guide to developing production-ready ML models for insurance underwriting and pricing</i></p>
+							<p><b>Introduction: The Insurance Prediction Challenge</b></p>
+							<p>In the insurance industry, accurate claim prediction is the cornerstone of effective pricing and risk management. However, predicting insurance claims is not a single problem it's actually two distinct but interconnected challenges:</p>
+							<ol>
+							<li>Will a claim occur? (Classification problem)</li>
+							<li>If it does, how much will it cost? (Regression problem)</li>
+							</ol>
+							<p>This two-stage modeling approach, often called a "Tweedie" or "frequency-severity" framework, is industry standard because it recognizes a fundamental truth: the factors that drive whether someone files a claim may differ from the factors that determine how expensive that claim will be.</p>
+							<p>In this section, I'll walk you through the complete development of two production-ready machine learning models:</p>
+							<ul>
+							<li>Claim Probability Model: Predicts the likelihood of a claim occurring (XGBoost Classifier)</li>
+							<li>Claim Severity Model: Predicts the cost of a claim, given that one has occurred (XGBoost Regressor)</li>
+							</ul>
+						
+							<p class="tools-header">Tools used:</p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/Insurance-Risk-Modeling">GitHub</a></p>
+							<span class="image main"><img src="images/Modeling.png" alt="" /></span>
+
+							<p><b>Business Context and Problem Statement</b></p>
+							<p><b>Why Two Models?</b></p>
+							<p>Imagine you're pricing an insurance policy. You need to estimate the expected claim cost, which mathematically is:</p>
+							
+							<pre><code class="language-python">
+Expected Claim Cost = P(Claim) × E(Severity | Claim)
+							</code></pre>
+
+							<p>Where:</p>
+							<ul>
+							<li>`P(Claim)` = Probability a claim occurs</li>
+							<li>`E(Severity | Claim)` = Expected cost if a claim does occur</li>
+							</ul>
+							
+							<p>A single model trying to predict total claims directly would struggle because:</p>
+							<ul>
+							<li> Most policies have zero claims (highly imbalanced)</li>
+							<li> The distribution of claim amounts is highly skewed</li>
+							<li> Different factors may influence frequency vs. severity</li>
+							</ul>
+
+							<p><b>Our Objectives</b></p>
+							<ol>
+							<li>Claim Probability Model: Achieve high AUC-PR (Area Under Precision-Recall Curve) to accurately identify high-risk policies</li>
+							<li>Claim Severity Model: Minimize RMSE and MAE to predict claim costs accurately</li>
+							<li>Production Readiness: Save models and feature lists for deployment</li>
+							<li>Interpretability: Understand which features drive each type of prediction</li>
+							</ol>
+
+							<h2><b>Part 1: Claim Probability Model</b></h2>
+							<p><b>The Challenge of Imbalanced Data</b></p>
+							<p>In insurance, claims are rare events. Typically, only 0.1% to 5% of policies file claims in a given period. This creates a severe class imbalance problem that can cause models to simply predict "no claim" for everyone and still achieve 95%+ accuracy, while being completely useless.</p>
+
+							<p><b>Our Strategy</b></p>
+							<p>We'll tackle this with a multi-pronged approach:</p>
+							<ol>
+							<li>SMOTE Oversampling: Synthetically generate minority class samples</li>
+							<li>Class Weighting: Penalize misclassifications of rare events more heavily</li>
+							<li>Appropriate Metrics: Use AUC-PR instead of accuracy</li>
+							<li>Ensemble Methods: Leverage XGBoost's ability to handle imbalanced data</li>
+							</ol>
+
+							<p><b>Step 1: Data Loading and Setup</b></p>
+							<pre><code class="language-python">
+import pandas as pd
+import numpy as np
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    roc_auc_score, classification_report, confusion_matrix
+)
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import average_precision_score, roc_auc_score
+from xgboost import XGBClassifier
+
+from imblearn.over_sampling import SMOTE
+
+# Load preprocessed dataset
+df = pd.read_parquet("../data/processed/modeling_dataset.parquet")
+							</code></pre>
+
+							<p>Key Point: We're starting with a preprocessed dataset stored in Parquet format. Parquet is excellent for ML workflows because it:</p>
+							<ul>
+							<li> Preserves data types perfectly</li>
+							<li> Compresses efficiently</li>
+							<li> Loads faster than CSV</li>
+							<li> Supports columnar operations</li>
+							</ul>
+
+							<p><b>Step 2: Target Variable Creation</b></p>
+							<pre><code class="language-python">
+# Create Claim Occurrence Target
+df['ClaimOccurred'] = np.where(df['TotalClaims_log'] > 0, 1, 0)
+
+# Avoid using claim-related variables as features
+leaky_columns = ["TotalClaims_log"]
+X = df.drop(columns=leaky_columns + ["ClaimOccurred"], errors='ignore')
+y = df["ClaimOccurred"]
+```
+							</code></pre>
+							<p>Notice we're dropping `TotalClaims_log`. This is crucial because it's derived directly from whether a claim occurred. Using it as a feature would be data leakage—using information that wouldn't be available at prediction time.</p>
+
+							<p><b>Step 3: Train-Test Split with Stratification</b></p>
+							<pre><code class="language-python">
+# Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+							</code></pre>
+
+							<p>Why Stratification Matters: The `stratify=y` parameter ensures both train and test sets have the same proportion of claims. Without it, we could randomly end up with even fewer (or more) claims in our test set, making evaluation unreliable.</p>
+
+							<p><b>Step 4: SMOTE Oversampling</b></p>
+							<pre><code class="language-python">
+# Apply SMOTE Oversampling
+print("\n Applying SMOTE Oversampling...")
+sm = SMOTE(random_state=42)
+X_train_res, y_train_res = sm.fit_resample(X_train, y_train)
+print("SMOTE applied. Class distribution after resampling:")
+print(y_train_res.value_counts())
+							</code></pre>
+
+							<pre><code class="language-python">
+Output:
+```
+ClaimOccurred
+0    790226
+1    790226
+```
+							</code></pre>
+
+							<p>What SMOTE Does: SMOTE (Synthetic Minority Over-sampling Technique) creates synthetic examples of the minority class by:</p>
+							<ol>
+							<li>Finding k-nearest neighbors of minority class samples</li>
+							<li>Creating new samples along the lines connecting neighbors</li>
+							<li>Balancing the dataset without simply duplicating existing samples</li>
+							</ol>
+							<p>Critical Note: We ONLY apply SMOTE to the training set, never to the test set. The test set must represent real-world distribution.</p>
+							
+							<p><b>Step 5: Model Definition with Class Weighting</b></p>
+
+							<pre><code class="language-python">
+# Define Class-Weighted Models
+pos_weight = df['ClaimOccurred'].value_counts()[0] / df['ClaimOccurred'].value_counts()[1]
+
+models = {
+    "Logistic Regression": LogisticRegression(
+        max_iter=1000, 
+        class_weight='balanced'
+    ),
+    "Decision Tree": DecisionTreeClassifier(
+        class_weight='balanced', 
+        random_state=42
+    ),
+    "Random Forest": RandomForestClassifier(
+        n_estimators=300, 
+        class_weight='balanced', 
+        random_state=42
+    ),
+    "XGBoost": XGBClassifier(
+        n_estimators=300,
+        learning_rate=0.1,
+        max_depth=6,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42,
+        eval_metric='logloss',
+        scale_pos_weight=pos_weight
+    )
+}
+							</code></pre>
+
+							<p><b>Why These Hyperparameters?</b></p>
+							<ol>
+							<li>n_estimators=300: More trees generally improve performance up to a point; 300 is a good balance</li>
+							<li>learning_rate=0.1: Moderate learning rate prevents overfitting while allowing reasonable training time</li>
+							<li>max_depth=6: Limits tree complexity to prevent overfitting</li>
+							<li>subsample=0.8: Each tree uses 80% of data (bagging), improving generalization</li>
+							<li>colsample_bytree=0.8: Each tree uses 80% of features, reducing correlation between trees</li>
+							<li>scale_pos_weight: Automatically weights the minority class based on its rarity</li>
+							</ol>
+
+
+							<p><b>Step 6: Model Training and Evaluation</b></p>
+							<pre><code class="language-python">
+# Train and Evaluate Models
+results = []
+
+for name, model in models.items():
+    print(f"\n Training {name}...")
+    model.fit(X_train_res, y_train_res)
+
+    # Get probability predictions (crucial for ranking)
+    y_prob = model.predict_proba(X_test)[:, 1]
+
+    # Calculate probabilistic metrics
+    roc_auc = roc_auc_score(y_test, y_prob)
+    avg_precision = average_precision_score(y_test, y_prob)
+
+    results.append({
+        "Model": name,
+        "ROC-AUC": roc_auc,
+        "AUC-PR": avg_precision
+    })
+
+results_df = pd.DataFrame(results).sort_values(by="AUC-PR", ascending=False)
+print("\n Probabilistic Model Ranking (NO THRESHOLD):")
+print(results_df)
+							</code></pre>
+
+							<pre><code class="language-python">
+Results:
+```
+                 Model   ROC-AUC    AUC-PR
+3              XGBoost  0.880192  0.015559
+0  Logistic Regression  0.892816  0.015494
+2        Random Forest  0.813428  0.014395
+1        Decision Tree  0.810886  0.014308
+```
+							</code></pre>
+
+							<p><b>Understanding the Metrics</b></p>
+
+							<p>Why ROC-AUC and AUC-PR?</p>
+							<ol>
+							<li>ROC-AUC (Receiver Operating Characteristic - Area Under Curve):</li>
+							<ul>
+							<li>Measures how well the model separates classes across all thresholds</li>
+							<li>Ranges from 0.5 (random) to 1.0 (perfect)</li>
+							<li>Our XGBoost: 0.88 (excellent discrimination)</li>
+							</ul>
+
+							<li>AUC-PR (Area Under Precision-Recall Curve):</li>
+							<ul>
+							<li>More informative for imbalanced datasets</li>
+							<li>Focuses on the minority class performance</li>
+							<li>Better reflects real-world utility when positives are rare</li>
+							<li>Our XGBoost: 0.0156 (seems low, but expected given extreme imbalance)</li>
+							</ul>
+
+							</ol>
+
+							<p>Interpreting Low AUC-PR: With only ~0.28% of policies having claims, even a good model will have low AUC-PR. What matters is:</p>
+							<ul>
+							<li>It's higher than random (baseline ~0.0028)</li>
+							<li>We're 5.6x better than random guessing</li>
+							<li>XGBoost outperforms other models</li>
+							</ul>
+
+							<p><b>Model Selection Decision</b></p>
+							<p>Despite Logistic Regression having slightly higher ROC-AUC (0.893 vs 0.880), we chose XGBoost because:</p>
+							<ol>
+							<li>AUC-PR is more relevant for imbalanced data</li>
+							<li>XGBoost handles non-linearity better</li>
+							<li>Feature interactions are automatically captured</li>
+							<li>Production robustness with built-in regularization</li>
+							</ol>
+
+							<p><b>Step 7: Model Persistence</b></p>
+
+							<pre><code class="language-python">
+import joblib
+import os
+
+# Save the best model
+best_model = models["XGBoost"]
+joblib.dump(best_model, "../saved_models/claim_probablity_model.joblib")
+
+# Save feature list for deployment
+FEATURE_COLUMNS = X_train_res.columns.tolist()
+joblib.dump(FEATURE_COLUMNS, '../data/processed/feature_probability_columns.pkl')
+
+print(" XGBoost model saved successfully!")
+							</code></pre>
+
+							<p>Why Save Feature Columns? When deploying the model, we need to ensure input data has:</p>
+							<ul>
+							<li> Exactly the same features</li>
+							<li> In exactly the same order</li>
+							<li> With the same data types</li>
+							</ul>
+							<p>The saved feature list acts as a contract between training and inference.</p>
+
+							<h2><b>Part 2: Claim Severity Model</b></h2>
+							<p>Now that we can predict whether a claim will occur, we need to predict how much it will cost when it does occur.</p>
+
+							<p><b>The Severity Modeling Challenge</b></p>
+							<p>Claim severity modeling is fundamentally different:</p>
+							<ul>
+							<li>Subset of data: We only model policies where claims occurred</li>
+							<li>Continuous target: We're predicting dollar amounts, not classes</li>
+							<li>Extreme skewness: A few very large claims can dominate</li>
+							<li>Different drivers: Severity may depend on different factors than frequency</li>
+							</ul>
+
+							<p><b>Step 1: Creating the Severity Dataset</b></p>
+
+							<pre><code class="language-python">
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+import numpy as np
+
+# Load data
+df = pd.read_parquet("../data/processed/modeling_dataset.parquet")
+
+# 1. Create Severity Dataset (Only Where ClaimOccurred == 1)
+df['ClaimOccurred'] = np.where(df['TotalClaims_log'] > 0, 1, 0)
+severity_df = df[df['ClaimOccurred'] == 1].copy()
+
+print(f" Number of claims occurred: {len(severity_df)}")
+							</code></pre>
+
+							<pre><code class="language-python">
+Output:
+```
+ Number of claims occurred: 2779
+```
+							</code></pre>
+						
+							<p>Critical Decision: We only train on policies with claims. This is called conditional modeling we're modeling `E(Severity | Claim occurred)`, not `E(Severity)` for all policies.</p>
+
+							<p><b>Step 2: Feature Selection and Leakage Prevention</b></p>
+
+							<pre><code class="language-python">
+# Define leaky or unwanted columns
+leaky_columns = [
+    "TotalClaims_log",           # Direct target variable
+    "TotalPremium_log",          # Could leak information about expected claims
+    "CalculatedPremiumPerTerm_log",  # Derived from premium
+    "ClaimOccurred"              # Our filter variable
+]
+
+# Define features (X) and target (y)
+X_sev = severity_df.drop(columns=leaky_columns, errors='ignore')
+y_sev_log = severity_df['TotalClaims_log']
+							</code></pre>
+
+							<p>Why Drop Premium Variables?</p>
+							<p>This is a nuanced decision. In practice:</p>
+							<ul>
+							<li>TotalPremium might reflect the insurer's prior knowledge of risk</li>
+							<li>Including it could create a feedback loop where historical pricing influences predictions</li>
+							<li>For a true "from-scratch" risk model, we exclude it</li>
+							<li>For a repricing model, you might include it</li>
+							</ul>
+
+							<p><b>Step 3: Train-Test Split for Severity</b></p>
+							<pre><code class="language-python">
+# 2. Train-Test Split
+X_sev_train, X_sev_test, y_sev_log_train, y_sev_log_test = train_test_split(
+    X_sev, y_sev_log, test_size=0.2, random_state=42
+)
+							</code></pre>
+
+							<p>Note: We don't stratify here because it's a regression problem. With only 2,779 claims, a 80/20 split gives us:</p>
+							<ul>
+							<li> Train: ~2,223 claims</li>
+							<li> Test: ~556 claims</li>
+							</ul>
+
+							<p><b>Step 4: Model Definition</b></p>
+
+							<pre><code class="language-python">
+# 3. Define Models
+models = {
+    "Decision Tree": DecisionTreeRegressor(random_state=42),
+    "Random Forest": RandomForestRegressor(
+        n_estimators=100, 
+        max_depth=10, 
+        random_state=42
+    ),
+    "XGBoost Regressor": XGBRegressor(
+        n_estimators=200, 
+        learning_rate=0.05, 
+        max_depth=6, 
+        subsample=0.8, 
+        colsample_bytree=0.8, 
+        random_state=42
+    ),
+}
+							</code></pre>
+							
+							<p>Hyperparameter Rationale</p>
+							<ul>
+							<li>Random Forest max_depth=10: Limits overfitting with limited data</li>
+							<li>XGBoost learning_rate=0.05: Lower than classification (0.1) for more careful learning</li>
+							<li>n_estimators=200: Fewer trees than classification since we have less data</li>
+							</ul>
+
+							<p><b>Step 5: Training Loop</b></p>
+
+							<pre><code class="language-python">
+trained_models = {}
+results = []
+
+print("\n Training Multiple Severity Regression Models...")
+for name, model in models.items():
+    print(f"  - Training {name}...")
+    model.fit(X_sev_train, y_sev_log_train)
+    trained_models[name] = model
+
+print(" All Severity Models Trained.")
+							</code></pre>
+
+							<p><b>Step 6: Evaluation on Log Scale</b></p>
+
+							<pre><code class="language-python">
+# 4. Evaluate Models
+print("\n Model Evaluation (log-scale):")
+for name, model in trained_models.items():
+    preds = model.predict(X_sev_test)
+    
+    rmse = np.sqrt(mean_squared_error(y_sev_log_test, preds))
+    mae = mean_absolute_error(y_sev_log_test, preds)
+    r2 = r2_score(y_sev_log_test, preds)
+    
+    print(f"\n{name}:")
+    print(f"   RMSE (log): {rmse:.4f}")
+    print(f"   MAE  (log): {mae:.4f}")
+    print(f"   R²         : {r2:.4f}")
+							</code></pre>
+
+							<pre><code class="language-python">
+Results:
+```
+Decision Tree:
+   RMSE (log): 1.0431
+   MAE  (log): 0.6645
+   R²         : 0.5727
+
+Random Forest:
+   RMSE (log): 0.9605
+   MAE  (log): 0.6204
+   R²         : 0.6377
+
+XGBoost Regressor:
+   RMSE (log): 0.9555
+   MAE  (log): 0.6142
+   R²         : 0.6415
+```
+							</code></pre>
+
+							<p><b>Understanding Regression Metrics</b></p>
+							<ol>
+							<li>RMSE (Root Mean Squared Error)</li>
+							<ul>
+							<li>- Average prediction error in log-space</li>
+							<li>- Penalizes large errors heavily (squared term)</li>
+							<li>- XGBoost RMSE: 0.9555 (lowest is best)</li>
+							</ul>
+
+							<li>MAE (Mean Absolute Error)</li>
+							<ul>
+							<li>- Average absolute prediction error</li>
+							<li>- More robust to outliers than RMSE</li>
+							<li>- XGBoost MAE: 0.6142 (lowest is best)</li>
+							</ul>
+
+							<li>R² (Coefficient of Determination)</p>
+							<ul>
+							<li>- Proportion of variance explained</li>
+							<li>- Ranges from -∞ to 1.0 (1.0 = perfect)</li>
+							<li>- XGBoost R²: 0.6415 (explains 64% of variance)</li>
+							</ul>
+
+							</ol>
+
+							<p>Key Insight: XGBoost outperforms both Decision Tree and Random Forest across all metrics, demonstrating the power of gradient boosting with carefully tuned hyperparameters.</p>
+
+							<p><b>Step 7: Back-Transformation to Dollar Scale</b></p>
+
+							<pre><code class="language-python">
+# 5. Convert Predictions Back to Original Scale
+# Example (for Random Forest)
+y_pred_log = trained_models["Random Forest"].predict(X_sev_test)
+y_pred = np.expm1(y_pred_log)  # reverse log1p transform
+y_true = np.expm1(y_sev_log_test)
+
+# Evaluate in actual currency scale
+rmse_actual = np.sqrt(mean_squared_error(y_true, y_pred))
+mae_actual = mean_absolute_error(y_true, y_pred)
+
+print("\n Random Forest Severity (Actual $ scale):")
+print(f"   RMSE: {rmse_actual:,.2f}")
+print(f"   MAE : {mae_actual:,.2f}")
+							</code></pre>
+
+							<pre><code class="language-python">
+Results:
+```
+ Random Forest Severity (Actual $ scale):
+   RMSE: 29,582.72
+   MAE : 13,007.27
+```
+							</code></pre>
+
+							<p>Interpreting Dollar-Scale Metrics</p>
+							<ul>
+							<li>RMSE of $29,583: On average, predictions are off by ~$30K (with emphasis on large errors)</li>
+							<li>MAE of $13,007: Typical prediction error is ~$13K</li>
+							<li>The difference between RMSE and MAE indicates the presence of some very large errors (outliers)</li>
+							</ul>
+							<p>Why MAE < RMSE? RMSE is always ≥ MAE because squaring amplifies large errors. The ratio (RMSE/MAE ≈ 2.27) suggests moderate outlier influence.</p>
+
+							<p><b>Step 8: Model and Metadata Persistence</b></p>
+
+							<pre><code class="language-python">
+import joblib
+
+# Save best severity model
+joblib.dump(
+    trained_models["XGBoost Regressor"], 
+    "../saved_models/claim_severity_model.pkl"
+)
+
+# Save feature columns for deployment consistency
+joblib.dump(
+    X_sev_train.columns.tolist(), 
+    "../data/processed/feature_claim_severity_columns.pkl"
+)
+
+print(" Severity model and features saved!")
+							</code></pre>
+
+							<p><b>Step 9: Metrics Tracking for MLOps</b></p>
+
+							<pre><code class="language-python">
+import os
+import json
+
+# Get Project Root and Create Metrics Directory
+project_root = os.path.dirname(os.path.dirname(os.path.abspath("insurance_pricing_project")))
+metrics_dir = os.path.join(project_root, "metrics")
+os.makedirs(metrics_dir, exist_ok=True)
+
+# Save Best Model Metrics
+best_metrics = results_df.iloc[0].to_dict()
+best_metrics_path = os.path.join(metrics_dir, "claim_severity_metrics.json")
+
+with open(best_metrics_path, "w") as f:
+    json.dump(best_metrics, f, indent=4)
+
+print(f" Saved best model metrics → {best_metrics_path}")
+
+#  Save Full Model Ranking Table
+ranking_path = os.path.join(metrics_dir, "claim_severity_model_ranking.csv")
+results_df.to_csv(ranking_path, index=False)
+
+print(f" Saved full model ranking table → {ranking_path}")
+							</code></pre>
+
+							<p>Why Track Metrics?</p>
+							<p>This creates an audit trail for:</p>
+							<ul>
+							<li>Model governance: Document which model was selected and why</li>
+							<li>Reproducibility: Record exact performance on test set</li>
+							<li>Model monitoring: Compare future retraining results</li>
+							<li>Regulatory compliance: Demonstrate due diligence in model selection</li>
+							</ul>
+
+							<p><b>Model Interpretation and Business Insights</b></p>
+							<p><b>Claim Probability Model Insights</b></p>
+							<p>Key Findings</p>
+							<ol>
+							<li>XGBoost achieved 88% ROC-AUC: The model can distinguish between claim and no-claim policies with high accuracy</li>
+							<li>5.6x better than random: While AUC-PR seems low (0.0156), it's actually 5.6 times better than the baseline (0.0028), which is substantial for such imbalanced data</li>
+							<li>Logistic Regression performed surprisingly well: With 89.3% ROC-AUC, it's nearly as good as XGBoost. This suggests:</li>
+							<ul>
+							<li>Relationships may be relatively linear</li>
+							<li>Feature engineering was effective</li>
+							<li>Could use LR for interpretability, XGBoost for performance</li>
+							</ul>
+							</ol>
+							<p>Business Implications</p>
+							<ul>
+							<li>Risk Segmentation: Use predicted probabilities to segment policies into risk tiers</li>
+							<li>Dynamic Pricing: Adjust premiums based on predicted claim probability</li>
+							<li>Underwriting Decisions: Flag high-probability applications for manual review</li>
+							<li>Portfolio Management: Monitor aggregate risk across the portfolio</li>
+							</ul>
+
+							<p><b>Claim Severity Model Insights</b></p>
+							<p>Key Findings</p>
+							<ol>
+							<li>1. 64% variance explained (R² = 0.6415): A solid result, but the unexplained 36% suggests:</li>
+							<ul>
+							<li>Claim amounts have inherent randomness</li>
+							<li>Some important features may be missing</li>
+							<li>Non-linear relationships may still exist</li>
+							</ul>
+							<li>$13K average prediction error (MAE): For context:</li>
+							<ul>
+							<li>If average claim is ~$25K, this is ~52% error</li>
+							<li>Some claims are inherently unpredictable (e.g., total loss vs. minor damage)</li>
+							<li>May need claim type stratification</p>
+							</ul>
+							<li>XGBoost vs Random Forest: The improvement from RF to XGBoost is marginal:</li>
+							<ul>
+							<li>RMSE: 0.9605 → 0.9555 (0.5% improvement)</p>
+							<li>Suggests we're near the ceiling of predictability with current features</li>
+							</ul>
+
+							</ol>
+							<p>Business Implications</p>
+							<ul>
+							<li>Reserve Setting: Use predicted severities to set appropriate claim reserves</li>
+							<li>Premium Calculation: Combined with probability model, calculate expected claim cost</li>
+							<li>Reinsurance Decisions: Identify policies likely to have high-severity claims</li>
+							<li>Loss Control: Target high-predicted-severity policies for preventive interventions</li>
+							</ul>
+
+							<p><b>The Combined Framework</b></p>
+							<p>In production, these models work together:</p>
+							<pre><code class="language-python">
+# Pseudocode for pricing a new policy
+claim_probability = probability_model.predict_proba(policy_features)[1]
+expected_severity = severity_model.predict(policy_features)
+expected_claim_cost = claim_probability * np.expm1(expected_severity)
+
+# Add profit margin and expenses
+premium = expected_claim_cost * (1 + profit_margin) + fixed_costs
+							</code></pre>
+
+							<p>This gives us:</p>
+							<ul>
+							<li>Granular pricing: Based on both likelihood and potential cost</li>
+							<li>Risk-appropriate premiums: High-frequency or high-severity = higher premium</li>
+							<li>Competitive edge: More accurate than single-model approacheslip>
+							</ul>
+
+							<p><b>Key Takeaways and Best Practices</b></p>
+							<ol>
+							<li><b>Handle Imbalanced Data Properly</b></p>
+								<ul>
+							<li>What We Did Right</li>
+							<ul>
+							<li> Used SMOTE oversampling</li>
+							<li> Applied class weighting</li>
+							<li> Chose appropriate metrics (AUC-PR over accuracy)</li>
+							<li> Only resampled training data, not test data</li>
+							</ul>
+							</ul>
+
+							<ul>
+							<li>Common Pitfalls to Avoid</li>
+							<ul>
+							<li> Using accuracy as primary metric</li>
+							<li> Applying SMOTE before train-test split (data leakage!)</li>
+							<li> Ignoring class imbalance entirely</li>
+							</ul>
+							</ul>
+
+							<li><b>Prevent Data Leakage</b></li>
+								<ul>
+							<li>What We Did Right</li>
+							<ul>
+							<li> Removed target-derived features (TotalClaims_log)</li>
+							<li> Carefully considered premium features</li>
+							<li> Only trained severity model on actual claims</li>
+							</ul>
+							</ul>
+							<ul>
+							<li>Common Pitfalls to Avoid</li>
+							<ul>
+							<li> Using any information not available at prediction time</li>
+							<li> Including features derived from the ta</li>
+							<li> Fitting scalers/encoders on the full dataset before splitting</li>
+							</ul>
+							</ul>
+
+							<li><b>Choose Metrics That Match Business Goals</b></li>
+							<ul>
+							<li>What We Did Right</li>
+								<ul>
+							<li> ROC-AUC and AUC-PR for probability (ranking matters)</li>
+							<li> RMSE and MAE for severity (prediction accuracy matters)</li>
+							<li> Evaluated on both log-scale and dollar-scale</li>
+							<li> Compared multiple models systematically</li>
+							</ul>
+							</ul>
+
+							<ul>
+							<li>Why It Matters</li>
+							<ul>
+							<li>- Optimizing for the wrong metric = wrong model</li>
+							<li>- Business needs probability scores, not just binary predictions</li>
+							<li>- Dollar-scale errors are what stakeholders care about</li>
+							</ul>
+							</ul>
+
+
+							
+							<li><b>Build for Production from Day One</b></li>
+							<ul>
+							<li>What We Did Right</li>
+								<ul>
+							<li> Saved models with joblib (sklearn-compatible)</li>
+							<li> Saved feature lists for deployment consistency</li>
+							<li> Tracked metrics in JSON/CSV for auditing</li>
+							<li> Used Parquet for efficient data storage</li>
+							<li> Set random seeds for reproducibility</li>
+							</ul>
+							</ul>
+
+							<ul>
+							<li>Why It Matters</li>
+							<ul>
+							<li> 90% of models never make it to productionlip>
+							<li> Often because they weren't built with deployment in mind</li>
+							<li> Our approach ensures smooth handoff to engineering</li>
+							</ul>
+							</ul>
+
+							
+							<li><b>The Two-Stage Approach is Powerful</b></li>
+							<ul>
+							<li> Separate optimization for frequency vs. severity</li>
+							<li> Better handling of zero-inflated distributions</li>
+							<li> More interpretable than single combined model</li>
+							<li> Aligns with actuarial best practices</li>
+							</ul>
+							<ul>
+							<li>Trade-offs</li>
+							<ul>
+							<li> More complex pipeline to maintain</li>
+							<li> Two models to monitor and retrain</li>
+							<li> Errors can compound (probability × severity)</li>
+							</ul>
+							</ul>
+
+							</ol>
+
+							<p><b>Next Steps and Improvements</b></p>
+							<p><b>Immediate Enhancements</b></p>
+							<ol>
+							<li>Hyperparameter Tuning:</li>
+
+							<pre><code class="language-python">
+from sklearn.model_selection import GridSearchCV
+   
+   param_grid = {
+       'n_estimators': [100, 200, 300],
+       'max_depth': [4, 6, 8],
+       'learning_rate': [0.01, 0.05, 0.1],
+   }
+   
+   grid_search = GridSearchCV(
+       XGBClassifier(), 
+       param_grid, 
+       cv=5, 
+       scoring='average_precision'
+   )
+							</code></pre>
+
+							<li>Feature Importance Analysis:</li>
+
+							<pre><code class="language-python">
+  import matplotlib.pyplot as plt
+   
+   feature_importance = pd.DataFrame({
+       'feature': X_train.columns,
+       'importance': best_model.feature_importances_
+   }).sort_values('importance', ascending=False)
+   
+   plt.barh(feature_importance['feature'][:20], 
+            feature_importance['importance'][:20])
+   plt.title('Top 20 Features - Claim Probability')
+   plt.show()
+							</code></pre>
+
+							<li>Calibration:</li>
+
+							<pre><code class="language-python">
+ from sklearn.calibration import CalibratedClassifierCV
+   
+   calibrated_model = CalibratedClassifierCV(
+       best_model, 
+       method='isotonic', 
+       cv=5
+   )
+   calibrated_model.fit(X_train, y_train)
+							</code></pre>
+
+							</ol>
+
+							<p><b>Advanced Improvements</b></p>
+							<ol>
+							<li>Temporal Validation: Test models on out-of-time samples to ensure they generalize to future periods</li>
+							<li>Claim Type Modeling: Build separate severity models for different claim types (collision, comprehensive, liability)</li>
+							<li>Ensemble Stacking: Combine probability predictions from multiple models</li>
+							<li>Neural Networks: For extremely large datasets, consider deep learning approaches</li>
+							<li>Explainability: Implement SHAP values for individual prediction explanations</li>
+							</ol>
+
+							<p><b>Production Deployment</b></p>
+
+							<pre><code class="language-python">
+# Example deployment pipeline
+class InsurancePricingModel:
+    def __init__(self):
+        self.prob_model = joblib.load('claim_probability_model.joblib')
+        self.sev_model = joblib.load('claim_severity_model.pkl')
+        self.prob_features = joblib.load('feature_probability_columns.pkl')
+        self.sev_features = joblib.load('feature_claim_severity_columns.pkl')
+    
+    def predict_premium(self, policy_df):
+        # Ensure feature alignment
+        prob_input = policy_df[self.prob_features]
+        sev_input = policy_df[self.sev_features]
+        
+        # Get predictions
+        claim_prob = self.prob_model.predict_proba(prob_input)[:, 1]
+        severity_log = self.sev_model.predict(sev_input)
+        severity = np.expm1(severity_log)
+        
+        # Calculate expected cost
+        expected_cost = claim_prob * severity
+        
+        # Add margin and expenses
+        premium = expected_cost * 1.25 + 50  # 25% margin + $50 expenses
+        
+        return premium, claim_prob, severity
+							</code></pre>
+
+							<p><b>Conclusion</b></p>
+							<p>We've built a complete two-stage predictive modeling framework for insurance claims:</p>
+							<ol>
+							<li>Claim Probability Model: XGBoost classifier achieving 88% ROC-AUC, capable of identifying high-risk policies with 5.6x better accuracy than random guessing</li>
+							<li>Claim Severity Model: XGBoost regressor explaining 64% of claim cost variance, with average prediction error of $13K</li>
+							</ol>
+							<p>These models demonstrate several critical data science best practices:</p>
+							<ul>
+							<li>Handling severe class imbalance with SMOTE and class weighting</li>
+							<li>Preventing data leakage through careful feature selection</li>
+							<li>Building production-ready pipelines with proper serialization and tracking</li>
+							</ul>
+							<p>The two-stage approach aligns with actuarial best practices and provides the granularity needed for accurate, competitive insurance pricing. By separating frequency from severity, we can:</p>
+							<ul>
+							<li>Better understand risk drivers</li>
+							<li>Optimize each model independently</li>
+							<li>Explain predictions to business stakeholders</li>
+							<li>Build more accurate pricing than single-model approaches</li>
+							</ul>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script>
+  				hljs.highlightAll();
+			</script>
+	</body>
+</html>

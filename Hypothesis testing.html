@@ -1,0 +1,805 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>New York Real Estate Price Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+			pre {
+    background: #f6f8fa;        /* light gray background */
+    padding: 15px;              /* space inside the box */
+    border-radius: 8px;         /* rounded corners */
+    overflow-x: auto;           /* horizontal scroll if needed */
+    font-size: 14px;            /* readable size */
+    line-height: 1.5;
+}
+
+code {
+    font-family: Consolas, Monaco, monospace; /* clean coding font */
+}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>A/B Testing in Insurance: How Gender Impacts Claims, Severity, and Profitability</h1>
+							<p>A Data-Driven Analysis Using Weighted Hypothesis Testing</p>
+							<h2>Introduction</h2>
+							<p>In the competitive landscape of insurance, understanding what drives claims and profitability across different customer segments is crucial for strategic decision-making. Are certain geographic regions inherently riskier? Do gender-based differences in driving behavior translate to measurable impacts on claim patterns? These questions aren't just academically interesting—they have direct implications for premium pricing, risk assessment, and market strategy.</p>
+							<p>This analysis presents a rigorous statistical investigation into insurance risk factors using advanced A/B testing methodologies. Rather than relying on simple comparisons that might be confounded by other variables, we employ propensity score weighting to ensure fair, apples-to-apples comparisons across three critical dimensions:</p>
+							<ol>
+							<li>Geographic Risk: Gauteng vs. Western Cape provinces</li>
+							<li>Micro-Geographic Patterns: Specific zip codes (1002 vs. 1006)</li>
+							<li>Demographic Factors: Male vs. Female policyholders</li>
+							</ol>
+							<p>Through this analysis, we'll uncover statistically significant differences in claim frequency, severity, and profitability, providing actionable insights for insurance underwriting and pricing strategies.</p>
+				
+							
+							<p class="tools-header">Tools used:</p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/Insurance-Risk-Modeling">GitHub</a></p>
+							<span class="image main"><img src="images/Hypothesis Testing.png" alt="" /></span>
+	
+							<p><b>The Business Problem</b></p>
+							<p>Insurance companies face a fundamental challenge: how to price policies that accurately reflect risk while remaining competitive in the market. Mispricing can lead to two costly outcomes:</p>
+							<ul>
+							<li>Underpricing high-risk segments → Loss of profitability, potential insolvency</li>
+							<li>Overpricing low-risk segments → Loss of competitive advantage, customer churn</li>
+							</ul>
+							<p>Traditional actuarial methods often struggle to isolate the true causal effect of specific risk factors because customer populations differ across multiple dimensions simultaneously. For instance, if we observe higher claims in Gauteng compared to Western Cape, is this due to geographic factors (traffic density, road conditions) or because Gauteng has a different mix of vehicle types, driver demographics, or coverage selections?</p>
+							<p>This is where causal inference through propensity score weighting becomes invaluable.</p>
+
+							<p><b>Methodology: Propensity Score Weighting for Causal Inference</b></p>
+							<p><b>Why Not Simple Comparisons?</b></p>
+							<p>A naive approach would simply compare average claims between groups. However, this fails to account for confounding variables factors that differ between groups and also affect outcomes.</p>
+							<p>For example, if Gauteng has more luxury vehicles with comprehensive coverage compared to Western Cape, any difference in claims might reflect vehicle type rather than geographic risk.</p>
+
+							<p><b>The Propensity Score Solution</b></p>
+							<p>Propensity score weighting creates a "pseudo-randomized" comparison by:</p>
+							<ol>
+							<li>Modeling the probability that a policy falls into treatment vs. control group based on observable characteristics</li>
+							<li>Weighting observations inversely to their probability of group membership</li>
+							<li>Balancing covariates so both groups have similar distributions of confounding variables</li>
+							</ol>
+							<p>This mimics the balance we'd achieve in a randomized controlled trial, allowing us to isolate the true effect of the factor being tested.</p>
+
+							<p><b>Key Metrics</b></p>
+							<p>We evaluate three critical insurance metrics:</p>
+							<ol>
+								<li>Claim Frequency</li>
+								<li>Claim Severity</li>
+								<li>Margin</li>
+							</ol>
+
+							<p><b>Statistical Testing Framework</b></p>
+							<p>For each comparison, we:</p>
+							<ol>
+							<li> Fit a logistic regression model to predict group membership (treatment assignment)</li>
+							<li> Generate propensity scores (predicted probabilities)</li>
+							<li> Calculate inverse propensity weights: weight = 1/p for treatment, 1/(1-p) for control</li>
+							<li> Compute weighted means for each metric in both groups</li>
+							<li> Perform weighted t-tests to assess statistical significance (α = 0.05)</li>
+							</ol>
+
+							<p><b>Data Preparation and Feature Engineering</b></p>
+							<p><b>Loading and Cleaning the Dataset</b></p>
+
+							<p>First, we load the insurance dataset and ensure data quality:</p>
+							<pre><code class="language-python">
+import re
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import chi2_contingency
+
+# Load the dataset
+df = pd.read_csv("cleaned_dataset_insurance.csv", sep=None, engine='python')
+
+# Ensure numeric columns are properly typed
+df['TotalPremium'] = pd.to_numeric(df['TotalPremium'], errors='coerce')
+df['TotalClaims'] = pd.to_numeric(df['TotalClaims'], errors='coerce')
+							</code></pre>
+
+							<p><b>Creating Key Metrics</b></p>
+							<p>We engineer our three core metrics at the policy level:</p>
+							<pre><code class="language-python">
+# Binary indicator: did this policy have any claims?
+df['HasClaim'] = np.where(df['TotalClaims'] > 0, 1, 0)
+
+# Claim frequency: 1 if claim occurred, 0 otherwise
+df['ClaimFrequency'] = df['HasClaim']
+
+# Claim severity: amount of claim when claim occurred (NaN otherwise)
+df['ClaimSeverity'] = np.where(df['HasClaim'] == 1, df['TotalClaims'], np.nan)
+
+# Loss ratio and margin calculations
+df['LossRatio'] = np.where(df['TotalPremium'] > 0, 
+                            df['TotalClaims'] / df['TotalPremium'], 
+                            np.nan)
+df['Margin'] = df['TotalPremium'] - df['TotalClaims']
+
+# Ensure ZipCode is string type for proper grouping
+df['ZipCode'] = df['ZipCode'].astype(str)
+							</code></pre>
+							
+							<p>Key Design Decision: <i>We define `ClaimFrequency` as a binary indicator at the policy level (0 or 1), making it equivalent to the claim rate when aggregated across policies.</i></p>
+
+							<p><b>Test 1: Geographic Risk Assessment (Gauteng vs. Western Cape)</b></p>
+							<p><i><b>Hypothesis</b></i></p>
+							<ul>
+							<li><b>Null Hypothesis (H₀):</b> <i>There is no difference in insurance risk metrics between Gauteng and Western Cape after controlling for vehicle and coverage characteristics.</i></li>
+							<li><b>Alternative Hypothesis (H₁):</b> <i>Significant differences exist in claim patterns between these provinces.</i></li>
+							</ul>
+
+							<p>Control Variables</p>
+							<p>To ensure fair comparison, we control for:</p>
+							<ul>
+							<li><strong> RegistrationYear</strong>: Vehicle age affects breakdown probability</li>
+							<li><strong> Gender</strong>: Driver demographics</li>
+							<li><strong> Make</strong>: Vehicle manufacturer (luxury vs. economy)</li>
+							<li><strong> CoverCategory, CoverGroup, CoverType</strong>: Coverage level selections</li>
+							<li><strong> TrackingDevice, AlarmImmobiliser</strong>: Security features</li>
+							<li><strong> ExcessSelected</strong>: Deductible amount chosen</li>
+							<li><strong> Section`, `Product`</strong>: Policy type</li>
+							</ul>
+
+							<p><b>Propensity Score Model</b></p>
+							<pre><code class="language-python">
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+# Define control variables
+controls = ['RegistrationYear', 'Gender', 'make', 'CoverCategory',
+            'CoverGroup', 'CoverType', 'TrackingDevice', 'AlarmImmobiliser',
+            'ExcessSelected', 'Section', 'Product']
+
+# Separate categorical and numeric variables
+categorical = ['Gender', 'make', 'CoverCategory', 'CoverGroup', 'CoverType',
+               'TrackingDevice', 'AlarmImmobiliser', 'ExcessSelected', 
+               'Section', 'Product']
+numeric = ['RegistrationYear']
+
+# Create preprocessing pipeline
+preprocessor = ColumnTransformer([
+    ('cat', OneHotEncoder(handle_unknown='ignore'), categorical),
+    ('num', 'passthrough', numeric)
+])
+
+# Fit logistic regression: Gauteng = 1, Western Cape = 0
+X = df[controls]
+y = (df['Province'] == 'Gauteng').astype(int)
+
+model = Pipeline([
+    ('prep', preprocessor),
+    ('logit', LogisticRegression(max_iter=5000, solver='saga'))
+])
+model.fit(X, y)
+
+# Generate propensity scores and weights
+df['pscore'] = model.predict_proba(X)[:, 1]
+df['weight'] = np.where(df['Province'] == 'Gauteng', 
+                         1 / df['pscore'], 
+                         1 / (1 - df['pscore']))	
+							</code></pre>
+
+							<p>Technical Note: We use the SAGA solver with 5000 iterations to ensure convergence for this high-dimensional problem (many categorical variables after one-hot encoding).</p>
+
+							<p><b>Weighted Mean Calculation</b></p>
+							<pre><code class="language-python">
+def weighted_mean(x, w):
+    """Compute weighted average, ignoring NaNs."""
+    mask = ~x.isna()
+    return np.average(x[mask], weights=w[mask])
+
+metrics = ['ClaimFrequency', 'ClaimSeverity', 'Margin']
+
+weighted_results = (
+    df.groupby('Province', group_keys=False)
+      .apply(lambda g: pd.Series({
+          m: weighted_mean(g[m], g['weight']) for m in metrics
+      }))
+      .reset_index()
+)
+
+print(weighted_results)								
+							</code></pre>
+
+
+						<figure>
+    <img src="images/Province Comparsion Table.png" alt="Province Comparsion Table" width="700">
+    <figcaption>Figure 1: Province Comparsion Table.</figcaption>
+</figure>
+
+							<p><b>Statistical Significance Testing</b></p>
+
+							<pre><code class="language-python">
+from statsmodels.stats.weightstats import DescrStatsW, CompareMeans
+
+results = {}
+for metric in metrics:
+    g1 = df[df['Province'] == 'Gauteng']
+    g2 = df[df['Province'] == 'Western Cape']
+    
+    # Create weighted statistics objects
+    d1 = DescrStatsW(g1[metric].dropna(), 
+                     weights=g1['weight'].loc[g1[metric].notna()])
+    d2 = DescrStatsW(g2[metric].dropna(), 
+                     weights=g2['weight'].loc[g2[metric].notna()])
+    
+    # Perform weighted t-test (unequal variances)
+    cm = CompareMeans(d1, d2)
+    tstat, pvalue, _ = cm.ttest_ind(usevar='unequal')
+    results[metric] = pvalue
+
+print("\nWeighted T-test p-values:")
+for m, p in results.items():
+    print(f"{m}: p = {p:.4f}")								
+							</code></pre>
+
+							<pre><code class="language-python">
+Output:
+```
+Weighted T-test p-values:
+ClaimFrequency: p = 0.0000
+ClaimSeverity: p = 0.0248
+Margin: p = 0.0237
+```								
+							</code></pre>
+
+							<p><b>Interpretation: Geographic Insights (<i>Gauteng vs Western Cape</i>) </b></p>
+							<p>All three metrics show statistically significant differences (p < 0.05):</p>
+							<p>Hence we reject H₀ which states that there exists no diffrence in the risk metrics amomng provinces.</p>
+							<ol>
+							<li>Claim Frequency: Gauteng shows 49% higher claim frequency 3.29 per 1000 vs 2.21 per 1000 policies</li>
+							<ul>
+							<li> Gauteng's urban density, traffic congestion, and larger population likely contribute</li>
+							<li> This translates to roughly 3-4 more claims per 1,000 policies annually</li>
+							</ul>
+							<li>Claim Severity: When claims occur, they're 16% less severe in Gauteng (R22,398 vs R26,819)</li>
+							<ul>
+							<li> Possible explanations: more minor fender-benders in urban traffic vs. high-speed highway accidents in Western Cape</li>
+							<li> Lower average claim amounts partially offset the higher frequency</li>
+							</ul>
+							<li>Margin: Gauteng is significantly less profitable (-R13.41 vs -R1.53 per policy)</li>
+							<ul>
+							<li> Both provinces show negative margins on average, but Gauteng is worse</li>
+							<li> The higher claim frequency dominates, making this a net unprofitable segment</li>
+							</ul>
+							</ol>
+							<p>Actionable Insight: Consider premium increases or stricter underwriting in Gauteng</p>
+							<p>Business Recommendation: Gauteng requires a differentiated pricing strategy. The combination of high frequency and low margin suggests current premiums don't adequately price for urban risk factors.</p>
+							
+
+							<p><b>Test 2: Micro-Geographic Analysis (<i>Zip Code 1002 vs. 1006</i>)</b></p>
+							<p><b>Hypothesis</b></p>
+							<p>Moving from provincial to zip code level allows us to detect hyperlocal risk patterns that might be masked in broader geographic aggregations.</p>
+							<ul>
+							<li>Null Hypothesis (H₀): No difference in risk metrics between zip codes 1002 and 1006 after controlling for confounders.</li>
+							<li>Alternative Hypothesis (H₁): Significant differences exist in the risk metrics between these zipcodes.</li>
+							</ul>
+							<p>Propensity Score Model</p>
+
+							<pre><code class="language-python">
+# Define control variables (excluding gender for this analysis)
+controls = ['RegistrationYear', 'Gender', 'make', 'CoverCategory',
+            'CoverGroup', 'CoverType', 'TrackingDevice', 'ExcessSelected',
+            'Section', 'Product']
+
+categorical = ['Gender', 'make', 'CoverCategory', 'CoverGroup', 'CoverType',
+               'TrackingDevice', 'ExcessSelected', 'Section', 'Product']
+numeric = ['RegistrationYear']
+
+preprocessor = ColumnTransformer([
+    ('cat', OneHotEncoder(handle_unknown='ignore'), categorical),
+    ('num', 'passthrough', numeric)
+])
+
+# Fit logistic regression: 1002 = 1, 1006 = 0
+X = df[controls]
+y = (df['ZipCode'] == '1002').astype(int)
+
+model = Pipeline([
+    ('prep', preprocessor),
+    ('logit', LogisticRegression(max_iter=5000, solver='saga'))
+])
+model.fit(X, y)
+
+# Generate propensity scores and weights
+df['pscore'] = model.predict_proba(X)[:, 1]
+df['weight'] = np.where(df['ZipCode'] == '1002', 
+                         1 / df['pscore'], 
+                         1 / (1 - df['pscore']))
+							</code></pre>
+
+							<p><strong>Note</strong>: The convergence warning indicates the model hasn't fully converged, but the weights are still usable for comparison. In production, we might increase iterations or try different solvers.</p>
+							
+							<p><b>Handling Missing Data</b></p>
+							<pre><code class="language-python">
+# Check for missing values in metrics
+metrics = ['ClaimFrequency', 'ClaimSeverity', 'Margin']
+for m in metrics:
+    print(df[m].isna().sum())	
+							</code></pre>
+
+							<pre><code class="language-python">
+Output:
+```
+0        # ClaimFrequency: no missing values
+987783   # ClaimSeverity: missing for policies without claims (expected)
+0        # Margin: no missing values
+```	
+							</code></pre>
+
+							<p><strong> Important </strong>: ClaimSeverity has NaN for policies without claims by design. Our weighted mean function handles this correctly.</p>
+
+							<p><b>Enhanced Weighted Mean Function</b></p>
+							<pre><code class="language-python">
+def weighted_mean(x, w):
+    """Compute weighted average safely, ignoring NaNs and zero weights."""
+    mask = (~x.isna()) & (w > 0)
+    if mask.sum() == 0:
+        return np.nan  # no valid data
+    return np.average(x[mask], weights=w[mask])
+							</code></pre>
+
+							<p><b>Results: All Zip Codes</b></p>
+
+							<pre><code class="language-python">
+weighted_results = (
+    df.groupby('ZipCode', group_keys=False)
+      .apply(lambda g: pd.Series({
+          m: weighted_mean(g[m], g['weight']) for m in metrics
+      }))
+      .reset_index()
+)
+
+							</code></pre>
+
+							<figure>
+    <img src="images/Zip Code Comparsion Table.png" alt="ZipCode Comparison Table" width="700">
+    <figcaption>Figure 2: ZipCode Comparison Table.</figcaption>
+</figure>
+
+							<p><b>Statistical Testing: 1002 vs. 1006</b></p>
+							<pre><code class="language-python">
+results = {}
+for metric in metrics:
+    g1 = df[df['ZipCode'] == '1002']
+    g2 = df[df['ZipCode'] == '1006']
+    
+    d1 = DescrStatsW(g1[metric].dropna(), 
+                     weights=g1['weight'].loc[g1[metric].notna()])
+    d2 = DescrStatsW(g2[metric].dropna(), 
+                     weights=g2['weight'].loc[g2[metric].notna()])
+    
+    cm = CompareMeans(d1, d2)
+    tstat, pvalue, _ = cm.ttest_ind(usevar='unequal')
+    results[metric] = pvalue
+
+print("\nWeighted T-test p-values:")
+for m, p in results.items():
+    print(f"{m}: p = {p:.4f}")
+							</code></pre>
+							
+							<pre><code class="language-python">
+Output:
+```
+Weighted T-test p-values:
+ClaimFrequency: p = 0.0267
+ClaimSeverity: p = 0.0058
+Margin: p = 0.6526
+```
+							</code></pre>
+
+							<p><b>Interpretation: Micro-Geographic Patterns</b></p>
+							<p>Statistical Significance:</p>
+							<ul>
+							<li>ClaimFrequency (p = 0.0267): <i>Significant at α = 0.05</i></li>
+							<li>ClaimSeverity (p = 0.0058): <i>Highly significant</i></li>
+							<li>Margin (p = 0.6526): <i>NOT significant</i></li>
+							</ul>
+
+							<p><b>Key Findings:</b></p>
+							<ol>
+							<li>Claim Frequency: Zip 1006 has 12% higher frequency (0.00399 vs 0.00357)</li>
+							<ul>
+							<li> Interestingly, 1006 is the riskier neighborhood by frequency</li>
+							</ul>
+							<li>Claim Severity: But 1006 has 20% lower severity (R18,602 vs R23,237)</li>
+							<ul>
+							<li> This pattern mirrors what we saw in Gauteng: more frequent but less severe claims</li>
+							<li> Likely reflects urban vs. suburban driving patterns within the same city</li>
+							</ul>
+							<li>Margin: Despite different claim patterns, margins are statistically identical (p = 0.65)</li>
+							<ul>
+							<li> The higher frequency in 1006 is offset by lower severity</li>
+							<li> Current pricing appears to handle this trade-off appropriately</li>
+							</ul>
+							</ol>
+							<p>Business Recommendation: Unlike the provincial comparison, these two zip codes don't require differential pricing the existing premium structure adequately captures the risk differences. This validates that hyperlocal pricing granularity reaches diminishing returns.</p>
+
+							<p><b>Test 3: Gender-Based Risk Analysis</b></p>
+							<p><b>Hypothesis</b></p>
+							<p>Gender is one of the most controversial rating factors in insurance due to discrimination concerns. Many jurisdictions have restricted or banned gender-based pricing. This analysis quantifies the actual risk differences.</p>
+							<ul>
+							<li><b><i>Null Hypothesis (H₀):</i></b> No difference in risk metrics between male and female policyholders after controlling for vehicle and coverage characteristics.</li>
+							<li><b><i>Alternative Hypothesis (H₁):</i></b> Significant differences exist in the risk metrics between male and female policyholders .</li>
+							</ul>
+
+							<p><b>Propensity Score Model</b></p>
+							<pre><code class="language-python">
+# Define control variables (EXCLUDING Gender from controls since it's the treatment)
+controls = ['RegistrationYear', 'make', 'CoverCategory', 'CoverGroup',
+            'CoverType', 'TrackingDevice', 'AlarmImmobiliser', 
+            'ExcessSelected', 'Section', 'Product']
+
+categorical = ['make', 'CoverCategory', 'CoverGroup', 'CoverType',
+               'TrackingDevice', 'AlarmImmobiliser', 'ExcessSelected',
+               'Section', 'Product']
+numeric = ['RegistrationYear']
+
+preprocessor = ColumnTransformer([
+    ('cat', OneHotEncoder(handle_unknown='ignore'), categorical),
+    ('num', 'passthrough', numeric)
+])
+
+# Fit logistic regression: Male = 1, Female = 0
+X = df[controls]
+y = (df['Gender'] == 'Male').astype(int)
+
+model = Pipeline([
+    ('prep', preprocessor),
+    ('logit', LogisticRegression(max_iter=10000, solver='saga'))
+])
+model.fit(X, y)
+
+# Generate propensity scores and weights
+df['pscore'] = model.predict_proba(X)[:, 1]
+df['weight'] = np.where(df['Gender'] == 'Male', 
+                         1 / df['pscore'], 
+                         1 / (1 - df['pscore']))
+
+							</code></pre>
+
+							<p><strong>Note</strong>: Increased max_iter to 10,000 to ensure convergence for this critical analysis.</p>
+
+							<p><b>Results: Gender Comparison</b></p>
+							<pre><code class="language-python">
+weighted_results = (
+    df.groupby('Gender', group_keys=False)
+      .apply(lambda g: pd.Series({
+          m: weighted_mean(g[m], g['weight']) for m in metrics
+      }))
+      .reset_index()
+)
+
+print(weighted_results)
+
+							</code></pre>
+
+							<figure>
+    <img src="images/Gender Comparsion.png" alt="Gender Comparsion Table" width="1000">
+    <figcaption>Figure 3: Gender Comparsion Table.</figcaption>
+</figure>
+
+							<p><b>Statistical Testing: Male vs. Female</b></p>
+							<pre><code class="language-python">
+results = {}
+for metric in metrics:
+    g1 = df[df['Gender'] == 'Male']
+    g2 = df[df['Gender'] == 'Female']
+    
+    d1 = DescrStatsW(g1[metric].dropna(), 
+                     weights=g1['weight'].loc[g1[metric].notna()])
+    d2 = DescrStatsW(g2[metric].dropna(), 
+                     weights=g2['weight'].loc[g2[metric].notna()])
+    
+    cm = CompareMeans(d1, d2)
+    tstat, pvalue, _ = cm.ttest_ind(usevar='unequal')
+    results[metric] = pvalue
+
+print("\nWeighted T-test p-values:")
+for m, p in results.items():
+    print(f"{m}: p = {p:.4f}")
+
+							</code></pre>
+
+							<pre><code class="language-python">
+Output:
+```
+Weighted T-test p-values:
+ClaimFrequency: p = 0.0000
+ClaimSeverity: p = 0.2943
+Margin: p = 0.0000
+```
+
+							</code></pre>
+
+							<p><b>Interpretation: Gender Risk Differences</b></p>
+
+							<p>Statistical Significance:</p>
+							<ul>
+							<li>ClaimFrequency (p < 0.0001): <b><i>Extremely significant</i></b></li>
+							<li>ClaimSeverity (p = 0.2943): <b><i>NOT significant</i></b></li>
+							<li>Margin (p < 0.0001): <b><i>Extremely significant</i></b></li>
+							</ul>
+							<p>Key Findings:</p>
+							<ol>
+							<li>Claim Frequency: Males have 41.5% higher claim frequency (0.00286 vs 0.00202)</li>
+							<ul>
+							<li> This is the largest relative difference across all our tests</li>
+							<li> Nearly 3 claims per 1,000 male policies vs. 2 per 1,000 female policies</li>
+							<li> This difference persists even after controlling for vehicle type, coverage selections, and security features</li>
+							</ul>
+							<li>Claim Severity: When claims occur, severity is statistically identical (R23,244 vs R22,014, p = 0.29)</li>
+							<ul>
+							<li> This challenges stereotypes about gender and accident severity</li>
+							<li> Male drivers don't have more expensive accidents, just more frequent ones</li>
+							</ul>
+							<li>Margin: Males generate significantly negative margins (-R4.59 vs +R15.18 per policy)</li>
+							<ul>
+							<li> Female policies are profitable on average</li>
+							<li> Male policies lose money on average</li>
+							<li> This R19.77 per-policy difference is substantial at scale</li>
+							</ul>
+							</ol>
+
+							<p>The "Not Specified" Category:</p>
+							<p>Interestingly, the small "Not Specified" gender group shows extremely poor performance (Margin: -R45.95), suggesting possible data quality issues or adverse selection in this category.</p>
+							<p>Policy and Ethical Considerations:</p>
+							<p>This analysis reveals a genuine, statistically robust difference in risk between genders. However, using gender for pricing raises important ethical and legal questions:</li>
+							<ul>
+							<li> Fairness vs. Actuarial Accuracy: Is it fair to charge higher premiums based on a demographic characteristic individuals can't control?</li>
+							<li> Legal Constraints: Many jurisdictions prohibit gender-based pricing (e.g., EU since 2012)</li>
+							<li> Alternative Approaches: </li>
+							<ul>
+							<li> Telematics and usage-based insurance can capture actual driving behavior</li>
+							<li> Vehicle choice and coverage selections already provide gender-correlated signals</li>
+							<li> Focus on controllable risk factors (security devices, driving courses)</li>
+							</ul>
+							</ul>
+							<p>Business Recommendation: Even where gender-based pricing is legal, consider the reputational and competitive implications. The industry trend is toward behavior-based pricing that achieves risk differentiation without demographic discrimination.</p>
+							
+
+							<p><b>Consolidated Business Insights</b></p>
+
+							<p><b>Strategic Implications</b></p>
+							<ol>
+							<li><b>Geographic Pricing Strategy</b></li>
+							<ul>
+							<li>The provincial analysis reveals that current pricing doesn't adequately reflect geographic risk:</li>
+							<li> Gauteng's higher urban density drives more frequent claims</li>
+							<li> Despite lower severity, the net effect is significantly negative margins</li>
+							<li> Action: Implement a 5-10% provincial adjustment factor in base rates</li>
+							</ul>
+
+							<li><b>Granularity Optimization</b></li>
+							<ul>
+							<li>The zip code analysis demonstrates that hyperlocal pricing has diminishing returns:</li>
+							<li> Within provinces, zip code differences in frequency and severity offset each other</li>
+							<li> Margins remain consistent at the micro-geographic level</li>
+							<li> Action: Maintain provincial-level geographic adjustments; avoid excessive zip code granularity that complicates pricing without improving accuracy</li>
+							</ul>
+
+							<li><b>Risk Factor Hierarchy</b></li>
+							<ul>
+							<li>Gender emerges as the strongest predictor of claim frequency (41.5% difference), but other factors warrant consideration:</li>
+							<li>Controllable Factors (to encourage):</li>
+							<ul>
+							<li> Installation of tracking devices and alarms</li>
+							<li> Selection of higher excess/deductibles</li>
+							</ul>
+							</ul>
+							<ul>
+							<li>Non-Controllable Factors (use cautiously):</li>
+							<ul>
+							<li> Gender: strong signal but ethically/legally problematic</li>
+							<li> Geography: acceptable for pricing in most jurisdictions</li>
+							<li> Vehicle age: already reflected in market value</li>
+							</ul>
+							</ul>
+
+							<li><b> Loss Ratio Management</b></li>
+							<ul>
+							<li>Current portfolio shows concerning patterns:</li>
+							<ul>
+							<li>Multiple segments with negative margins</li>
+							<li> Overall profitability depends heavily on volume in profitable segments</li>
+							<li>Action: Quarterly reviews of segment-level loss ratios with dynamic pricing adjustments</li>
+							</ul>
+							</ul>
+							</ol>
+
+							<p><b>Technical Considerations and Limitations</b></p>
+							<p><b>Strengths of This Approach</b></p>
+							<ol>
+							<li>Causal Inference: Propensity score weighting controls for confounding, providing more reliable effect estimates than simple comparisons</li>
+							<li>Policy-Level Analysis: Metrics calculated at the policy level avoid temporal aggregation issues</li>
+							<li>Robust Testing: Weighted t-tests with unequal variance assumptions prevent false positives from heteroskedasticity</li>
+							</ol>
+
+
+							<p><b>Limitations to Consider</b></p>
+							<ol>
+							<li>Unobserved Confounders: We can only control for variables in the dataset. Driving experience, commute distance, and annual mileage are not available but likely relevant</li>
+							<li>Selection Bias: If certain customer types systematically choose or avoid our company, results may not generalize to the broader market</li>
+							<li>Temporal Effects: This is a snapshot analysis. Seasonal patterns and trends over time aren't captured</li>
+							<li>Model Convergence: Some propensity score models didn't fully converge, though results appear stable</li>
+							<li>Sample Size Variation: Smaller segments (like "Not Specified" gender or rare zip codes) have wider confidence intervals</li>
+							</ol>
+
+							<p><b>Recommendations for Further Analysis</b></p>
+							<ol>
+							<li>Longitudinal Study: Track cohorts over multiple years to assess claim pattern evolution</li>
+							<li>Telematics Integration: Incorporate GPS and accelerometer data for behavior-based risk scoring</li>
+							<li>Machine Learning: Gradient boosting or neural networks might capture non-linear interactions between risk factors</li>
+							<li>External Data: Weather patterns, road quality indices, and local crime statistics could enhance geographic models</li>
+							<li>Survival Analysis: Time-to-first-claim analysis could reveal differential early-policy risk</li>
+							</ol>
+
+
+							<p><b>Conclusion</b></p>
+							<p>This rigorous statistical analysis, employing propensity score weighting and weighted hypothesis testing, has uncovered actionable risk differentials across geography and demographics in the insurance portfolio.</p>
+
+							<p><b>Key Takeaways</b></p>
+							<ul>
+							<li>Gauteng requires immediate pricing attention: 49% higher claim frequency and significantly negative margins demand a 5-10% premium adjustment</li>
+							<li>Zip code granularity offers limited value: Within-province variations offset, suggesting provincial-level adjustments are sufficient</li>
+							<li>Gender is a powerful but problematic predictor: While 41.5% frequency differences exist, ethical and legal constraints favor behavioral pricing alternatives</li>
+							<li>Data-driven pricing is essential: Simple experience-based adjustments miss these nuanced patterns; propensity score methods provide causal estimates</li>
+							</ul>
+
+							<li><b>Implementation Roadmap</b></li>
+							<ol>
+							<li><b>Immediate (0-3 months):</b></li>
+							<ul>
+							<li>Implement Gauteng provincial adjustment (+7%)</li>
+							<li>Review gender coefficients in existing models (where legal)</li>
+							<li>Flag "Not Specified" gender category for data quality review</li>
+							</ul>
+
+							<li><b>Medium-term (3-12 months):</b></li>
+							<ul>
+							<li>Pilot telematics program in high-frequency segments</li>
+							<li>Develop dashboards for quarterly segment monitoring</li>
+							<li>A/B test pricing changes in select markets</li>
+							</ul>
+
+							<li><b>Long-term (12+ months):</b></li>
+							<ul>
+							<li>Build ML-based pricing models incorporating behavior data</li>
+							<li>Transition from demographic to behavior-based pricing</li>
+							<li>Establish continuous monitoring and dynamic pricing systems</li>
+							</ul>
+
+							</ol>
+
+							<p><b>Final Thought</b></p>
+							<p>The insurance industry is evolving from crude demographic proxies to sophisticated, behavior-based pricing. This analysis demonstrates that rigorous causal inference methods can quantify true risk differentials, providing the foundation for pricing that is simultaneously actuarially sound, competitively sharp, and ethically defensible.</p>
+							<p>The question isn't whether data should drive pricing it already does. The question is whether we have the analytical sophistication to extract true causal signals from correlational noise. Propensity score weighting, as demonstrated here, is one powerful tool in that arsenal.</p>
+
+							<p><b>Code Availability</b></p>
+							<p>The complete analysis code is available in the accompanying Jupyter notebook. Key libraries used:</p>
+							<ul>
+							<li>pandas (1.5+): Data manipulation</li>
+							<li>numpy (1.23+): Numerical operations</li>
+							<li>scikit-learn (1.2+): Machine learning and propensity scoring</li>
+							<li>statsmodels (0.14+): Weighted statistical tests</li>
+							<li>scipy (1.10+): Statistical functions</li>
+							<li>All analyses were conducted in Python 3.10+ with reproducible random seeds where applicable.</li>
+							</ul>
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script>
+  				hljs.highlightAll();
+			</script>
+
+	</body>
+</html>

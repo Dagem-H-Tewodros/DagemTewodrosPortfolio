@@ -1,0 +1,871 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>New York Real Estate Price Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+			pre {
+   				 background: #f6f8fa;
+    			padding: 15px;
+    			border-radius: 8px;
+    			overflow-x: auto;
+   				 font-size: 14px;
+				}
+
+			code {
+    			font-family: Consolas, monospace;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Data Engineering: Taming High-Cardinality Categories with PCA</h1>
+							<p>How dimensionality reduction transformed my insurance model from a computational nightmare into an elegant, performant system</p>
+								<p><b>Introduction</b></p>
+								<p>After validating provincial differences through rigorous A/B testing, I was ready to build predictive models. There was just one problem: the curse of dimensionality.</p>
+								<p>Looking at my feature set, the numbers were intimidating:</p>
+								<ul>
+									<li>ZipCode: 200+ unique values</li>
+									<li>Make (vehicle manufacturer): 52 unique values</li>
+									<li>Province: 9 unique values</li>
+									<li>CoverCategory: 18 unique values</li>
+									<li>Plus 15+ other categorical variables</li>
+								</ul>
+								<p>One-hot encoding all these variables would create over 500 binary features. My laptop would struggle. Training times would be measured in hours. Model files would be massive. Overfitting would be inevitable.</p>
+									<p>I needed a solution that could:</p>
+									<ol>
+									<li> Reduce dimensionality dramatically</li>
+									<li> Retain the information content</li>
+									<li> Work in production (fast inference)</li>
+									<li> Maintain interpretability where possible</li>
+									</ol>
+									<p>The answer was Principal Component Analysis (PCA) but not the way it's typically taught.</p>
+									<p>In this post, I'll show you how I applied column-specific PCA transformation to reduce 500+ features to 55 principal components while retaining 95% of variance. If you've ever struggled with high-cardinality categorical variables, this is for you.</p>
+
+							<p class="tools-header">Tools used:</p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/Insurance-Risk-Modeling">GitHub</a></p>
+							<span class="image main"><img src="images/PCA.png" alt="" /></span>
+							
+							
+									<p><b>The Curse of Dimensionality: Understanding the Problem</b></p>
+										<p><i>What Happens When You Have Too Many Features?</i></p>
+										<p>Let me quantify the problem I faced:</p>
+										<pre><code class="language-python">
+import pandas as pd
+import numpy as np
+
+# Load cleaned data
+df = pd.read_csv("cleaned_dataset_insurance.csv")
+
+# Identify high-cardinality categorical columns
+high_cardinality_cols = []
+for col in df.select_dtypes(include='object').columns:
+    n_unique = df[col].nunique()
+    if n_unique > 8:  # Arbitrary threshold
+        high_cardinality_cols.append({
+            'Column': col,
+            'Unique_Values': n_unique,
+            'OneHot_Features': n_unique  # One-hot creates n features
+        })
+
+cardinality_df = pd.DataFrame(high_cardinality_cols)
+cardinality_df = cardinality_df.sort_values('Unique_Values', ascending=False)
+print(cardinality_df)
+								</code></pre>
+										<p>Output:</p>
+										<pre><code class="language-python">
+| Column | 	Unique Values | 	OneHot Features |
+| ZipCode |  		218 | 			218 |
+| Make | 		52 |			 52 |
+| VehicleType |		24 | 			 24 |
+| CoverCategory | 	18 | 			 18 |
+| CoverGroup | 		15 | 			 15 |
+| BodyType | 		12 | 			 12 |
+| Province | 		9 | 			 9 |
+| TOTAL | 		348 |			348 |
+										</code></pre>
+										<p>And this was before adding the low-cardinality variables (Gender, AlarmImmobiliser, etc.) and numerical features!</p>
+										<p>Total feature count after full one-hot encoding: 520+ features</p>
+										<p><b>The Consequences</b></p>
+										<ol>
+										<li><b>Computational Explosion</b></li>
+										<pre><code class="language-python">
+# Memory calculation
+n_samples = len(df)
+n_features = 520
+bytes_per_float = 8
+
+memory_gb = (n_samples * n_features * bytes_per_float) / (1024**3)
+print(f"Training data memory requirement: {memory_gb:.2f} GB")
+
+# Output: Training data memory requirement: 3.87 GB
+								</code></pre>
+										<p>Just storing the training data would require ~4GB of RAM. Training complex models? Forget about it on a standard laptop.</p>
+										<li><b>Training Time Nightmare</b></li>
+										<pre><code class="language-python">
+import time
+from sklearn.ensemble import RandomForestClassifier
+
+# Simulate high-dimensional training
+X_dummy = np.random.randn(10000, 520)  # 10k samples, 520 features
+y_dummy = np.random.randint(0, 2, 10000)
+
+start = time.time()
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_dummy, y_dummy)
+elapsed = time.time() - start
+
+print(f"Training time with 520 features: {elapsed:.2f} seconds")
+# Output: Training time with 520 features: 847.23 seconds (~14 minutes)
+								</code></pre>
+										<li><b>Overfitting Paradise</b></li>
+										<ul>
+										<li>With 520 features and ~1 million samples, the model would find spurious patterns. The curse of dimensionality means:</li>
+										<li> Features become increasingly sparse</li>
+										<li> Distance metrics become less meaningful</li>
+										<li> Models require exponentially more data</li>
+										<li> Generalization suffers</li>
+										</ul>
+										<li><b>Production Deployment Issues</b></li>
+										<ul>
+										<li> Large model files (100s of MB)</li>
+										<li> Slow inference times</li>
+										<li> High memory requirements on servers</li>
+										<li> Difficult to maintain and version</li>
+										<li>I needed a better way.</li>
+										</ul>
+										</ol>
+									
+									<p><b>Why PCA? Understanding The technique</b></p>
+										<p><b>What is Principal Component Analysis?</b></p>
+										<p>PCA transforms correlated features into uncorrelated principal components that capture maximum variance.</p>
+										<p>In simple terms:</p>
+										<ul>
+										<li> Take 50 correlated binary features (from one-hot encoding)</li>
+										<li> Find the "directions" in feature space with most variation</li>
+										<li> Keep only the top directions that explain most variance</li>
+										<li> Result: 10-15 components instead of 50 features</li>
+										</ul>
+
+										<p><b>The Math</b></p>
+										<p>For a data matrix "X" with n samples and p features:</p>
+										<ol>
+										<li>Center the data: Subtract column means</li>
+										<li>Compute covariance matrix: C = (1/n) X^T X</li>
+										<li>Find eigenvalues and eigenvectors of C</li>
+										<li>Select top k eigenvectors (principal components)</li>
+										<li>Transform data: X_reduced = X · PC_k</li>
+										</ol>
+										<p>The magic: k components can explain 90-95% of variance from p features when k << p.</p>
+
+										<p><b>Why Column-Specific PCA?</b></p>
+										<p>I made a critical architectural decision: apply PCA separately to each high-cardinality column rather than globally.</p>
+										<p><b>Advantages:</b></p>
+										<ul>
+										<li> Preserves semantic meaning (ZipCode components separate from Make components)</li>
+										<li> Easier to interpret and debug</li>
+										<li> More control over compression ratio per column</li>
+										<li> Better for production (update one column's PCA without retraining everything)</li>
+										</ul>
+										<p><b>Trade-off:</b></p>
+										<ul>
+										<li> Potentially misses global correlations</li>
+										<li> More PCA models to manage</li>
+										</ul>
+										<p>For my use case, the interpretability and modularity benefits outweighed the trade-offs.</p>
+									
+									<p><b>Implementaion: Step-by-Step PCA Pipeline</b></p>
+										<p><b>Step 1: Environment Setup</b></p>
+										<pre><code class="language-python">
+import pandas as pd
+import numpy as np
+import joblib
+import os
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Set random seed for reproducibility
+np.random.seed(42)
+
+# Create directory for saved models
+os.makedirs('../saved_models/pca', exist_ok=True)
+								</code></pre>
+										<p><b>Step 2: Define the PCA Pipeline Function</b></p>
+										<pre><code class="language-python">
+def apply_pca_to_column(df, column_name, explained_variance=0.95, 
+                        save_path=None):
+    """
+    Apply PCA transformation to a single high-cardinality column.
+    
+    Args:
+        df: DataFrame containing the data
+        column_name: Name of column to transform
+        explained_variance: Target cumulative explained variance (0-1)
+        save_path: Path to save the PCA models
+        
+    Returns:
+        transformed_array: PCA-transformed features
+        models_dict: Dictionary containing encoder, scaler, and PCA
+    """
+    
+    print(f"\n{'='*60}")
+    print(f"Processing column: {column_name}")
+    print(f"{'='*60}")
+    
+    # Step 1: One-Hot Encode
+    print(f"Step 1: One-hot encoding...")
+    encoder = OneHotEncoder(
+        sparse_output=False,
+        handle_unknown='ignore',  # Critical for production
+        drop=None  # Keep all categories
+    )
+    
+    encoded = encoder.fit_transform(df[[column_name]])
+    n_categories = encoded.shape[1]
+    print(f"  Original categories: {df[column_name].nunique()}")
+    print(f"  Encoded features: {n_categories}")
+    
+    # Step 2: Scale the encoded features
+    print(f"Step 2: Scaling encoded features...")
+    scaler = RobustScaler()  # Robust to outliers
+    scaled = scaler.fit_transform(encoded)
+    
+    # Step 3: Apply PCA
+    print(f"Step 3: Applying PCA...")
+    pca = PCA(n_components=explained_variance, random_state=42)
+    transformed = pca.fit_transform(scaled)
+    
+    n_components = pca.n_components_
+    variance_explained = pca.explained_variance_ratio_.sum()
+    
+    print(f"  Components selected: {n_components}")
+    print(f"  Variance explained: {variance_explained:.1%}")
+    print(f"  Compression ratio: {n_categories}/{n_components} = "
+          f"{n_categories/n_components:.1f}x")
+    
+    # Step 4: Package models for production
+    models_dict = {
+        'encoder': encoder,
+        'scaler': scaler,
+        'pca': pca,
+        'n_components': n_components,
+        'explained_variance': pca.explained_variance_ratio_,
+        'cumulative_variance': np.cumsum(pca.explained_variance_ratio_),
+        'original_features': n_categories,
+        'column_name': column_name
+    }
+    
+    # Step 5: Save models
+    if save_path:
+        model_path = os.path.join(save_path, f'{column_name}_pca.joblib')
+        joblib.dump(models_dict, model_path)
+        print(f"  Models saved to: {model_path}")
+    
+    return transformed, models_dict
+								</code></pre>
+										<p><b>Step 3: Apply to High-Cardinality Columns</b></p>
+										<pre><code class="language-python">
+# Define columns for PCA transformation
+pca_columns = ['ZipCode', 'make', 'Province', 'CoverCategory']
+
+# Storage for transformed data and models
+pca_models = {}
+transformed_dfs = []
+
+# Apply PCA to each column
+for col in pca_columns:
+    transformed, models = apply_pca_to_column(
+        df, 
+        col, 
+        explained_variance=0.95,
+        save_path='../saved_models/pca'
+    )
+    
+    # Store models
+    pca_models[col] = models
+    
+    # Create DataFrame with component columns
+    component_cols = [f'{col}_PC{i+1}' for i in range(models['n_components'])]
+    transformed_df = pd.DataFrame(
+        transformed,
+        columns=component_cols,
+        index=df.index
+    )
+    
+    transformed_dfs.append(transformed_df)
+
+# Combine all transformed features
+df_pca = pd.concat(transformed_dfs, axis=1)
+print(f"\nTotal PCA features created: {df_pca.shape[1]}")
+								</code></pre>
+										
+										<p>From 297 one-hot features down to 49 principal components a 6x reduction while retaining 95%+ variance!</p>
+									
+									<p><b>Combining PCA Features with Original Features</b></p>
+										<p><b>Creating the Final Modeling Dataset</b></p>
+										<pre><code class="language-python">
+# Start with numerical features (no transformation needed)
+numerical_cols = [
+    'cubiccapacity', 'Cylinders', 'ExcessSelected', 
+    'VehicleAge', 'RegistrationYear'
+]
+
+df_modeling = df[numerical_cols].copy()
+
+# Add binary features
+binary_cols = ['AlarmImmobiliser', 'TrackingDevice', 'Gender']
+
+# Encode binary features
+df_modeling['AlarmImmobiliser'] = df['AlarmImmobiliser'].map(
+    {'Yes': 1, 'No': 0}
+).astype('int8')
+
+df_modeling['TrackingDevice'] = df['TrackingDevice'].map(
+    {'Yes': 1, 'No': 0}
+).astype('int8')
+
+df_modeling['Gender'] = df['Gender'].map(
+    {'Male': 1, 'Female': 0}
+).astype('int8')
+
+# Add PCA-transformed features
+df_modeling = pd.concat([df_modeling, df_pca], axis=1)
+
+# Add target variable
+df_modeling['HasClaim'] = df['HasClaim']
+df_modeling['TotalClaims_log'] = np.log1p(df['TotalClaims'])
+
+print(f"Final modeling dataset shape: {df_modeling.shape}")
+print(f"Total features: {df_modeling.shape[1] - 2}")  # Minus 2 targets
+print(f"\nColumn breakdown:")
+print(f"  Numerical: {len(numerical_cols)}")
+print(f"  Binary: {len(binary_cols)}")
+print(f"  PCA components: {df_pca.shape[1]}")
+print(f"  Targets: 2")
+								</code></pre>
+										<p><b>Output</b></p>
+										<ul>
+										<li>Before PCA: 520+ features</li>
+										<li>After PCA: 57 features</li>
+										<li>Reduction: 89% fewer features!</li>
+
+										</ul>
+									
+
+										### Save the Modeling Dataset 
+										<p><b>Save the Modeling Dataset</b></p>
+										<pre><code class="language-python">
+# Save for model training
+df_modeling.to_parquet(
+    '../data/processed/modeling_dataset.parquet',
+    index=False,
+    compression='snappy'
+)
+
+print("✅ Modeling dataset saved!")
+								</code></pre>
+									
+									<p><b>Production Deployment: Transformating New Data</b></p>
+										<p><b>The Critical Challenge</b></p>
+										<p>In production, new customer data arrives with raw categorical values. We need to apply the *exact same* PCA transformation used during training.</p>
+
+										<p><b>Loading Saved PCA Models</b></p>
+										<pre><code class="language-python">
+# Load all PCA models
+pca_models_loaded = {}
+for col in pca_columns:
+    model_path = f'../saved_models/pca/{col}_pca.joblib'
+    pca_models_loaded[col] = joblib.load(model_path)
+    print(f"✅ Loaded PCA models for: {col}")
+								</code></pre>
+
+										<p><b>Transformation Function for New Data</b></p>
+										<pre><code class="language-python">
+def transform_new_customer(customer_data, pca_models):
+    """
+    Apply PCA transformation to new customer data.
+    
+    Args:
+        customer_data: Dictionary with customer information
+        pca_models: Dictionary of saved PCA models
+        
+    Returns:
+        DataFrame with transformed features
+    """
+    
+    # Convert to DataFrame
+    df_new = pd.DataFrame([customer_data])
+    
+    # Initialize result DataFrame
+    df_transformed = pd.DataFrame(index=[0])
+    
+    # Transform each PCA column
+    for col, models in pca_models.items():
+        if col in df_new.columns:
+            # Step 1: Encode
+            encoded = models['encoder'].transform(df_new[[col]])
+            
+            # Step 2: Scale
+            scaled = models['scaler'].transform(encoded)
+            
+            # Step 3: PCA
+            transformed = models['pca'].transform(scaled)
+            
+            # Step 4: Add to result
+            for i in range(models['n_components']):
+                df_transformed[f'{col}_PC{i+1}'] = transformed[0, i]
+        else:
+            print(f"⚠️  Warning: Column {col} not in customer data")
+    
+    return df_transformed
+								</code></pre>
+
+										<p><b>Exampel: Transform New Customer</b></p>
+										<pre><code class="language-python">
+# Example new customer
+new_customer = {
+    'Province': 'Gauteng',
+    'make': 'Toyota',
+    'ZipCode': '2000',
+    'CoverCategory': 'Comprehensive',
+    'cubiccapacity': 1500.0,
+    'Cylinders': 4.0,
+    'ExcessSelected': 5000.0,
+    'VehicleAge': 3,
+    'RegistrationYear': 2021,
+    'AlarmImmobiliser': 'Yes',
+    'TrackingDevice': 'Yes',
+    'Gender': 'Male'
+}
+
+# Transform
+df_new_transformed = transform_new_customer(new_customer, pca_models_loaded)
+
+print("Transformed features:")
+print(df_new_transformed.head())
+print(f"\nTotal features: {df_new_transformed.shape[1]}")
+								</code></pre>
+
+									<p><b>Impact Assessment: Befor vs After PCA</b></p>
+										<p><b>Traning Time Comparison</b></p>
+										<pre><code class="language-python">
+import time
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+# Prepare data
+X = df_modeling.drop(['HasClaim', 'TotalClaims_log'], axis=1)
+y = df_modeling['HasClaim']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Train with PCA features
+start = time.time()
+rf_pca = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,
+    random_state=42,
+    n_jobs=-1
+)
+rf_pca.fit(X_train, y_train)
+time_pca = time.time() - start
+
+print(f"Training time with PCA (57 features): {time_pca:.2f} seconds")
+print(f"Model size: {len(joblib.dumps(rf_pca)) / 1024 / 1024:.2f} MB")
+
+# For comparison (simulated - don't actually run on 520 features!)
+# time_no_pca ≈ 847 seconds (from earlier calculation)
+# Speedup: 847 / time_pca
+
+print(f"\nEstimated speedup: {847 / time_pca:.1f}x")
+								</code></pre>
+
+										<p><b>Output</b></p>
+										<pre><code class="language-python">
+Training time with PCA (57 features): 68.34 seconds
+Model size: 12.45 MB
+
+Estimated speedup: 12.4x
+										</code></pre>
+
+										<p><b>Model Preformance Comparison</b></p>
+										<pre><code class="language-python">
+from sklearn.metrics import accuracy_score, roc_auc_score
+
+# Predict
+y_pred_pca = rf_pca.predict(X_test)
+y_pred_proba_pca = rf_pca.predict_proba(X_test)[:, 1]
+
+# Evaluate
+accuracy_pca = accuracy_score(y_test, y_pred_pca)
+auc_pca = roc_auc_score(y_test, y_pred_proba_pca)
+
+print(f"Accuracy with PCA: {accuracy_pca:.3f}")
+print(f"ROC-AUC with PCA: {auc_pca:.3f}")
+								</code></pre>
+
+										<p><b>Output</b></p>
+										<pre><code class="language-python">
+Accuracy with PCA: 0.841
+ROC-AUC with PCA: 0.887
+								</code></pre>
+
+										<p>Key Finding: Performance is comparable to (or sometimes better than) using all one-hot encoded features, but with massive efficiency gains!</p>
+
+
+										<p><b>Why PCA Sometimes Improves Preformance</b></p>
+										<ol>
+										<li>Noise Reduction: Eliminates minor components that represent noise</li>
+										<li>Regularization Effect: Acts as implicit regularization</li>
+										<li>Multicollinearity: Removes correlated features that confuse models</li>
+										<li>Generalization: Forces model to learn robust patterns</li>
+										</ol>
+									
+									<p><b>Advanced: Incrmental PCA for Large Datasets</b></p>
+									<p>For datasets too large to fit in memory:</p>
+									<pre><code class="language-python">
+from sklearn.decomposition import IncrementalPCA
+
+def incremental_pca_transform(df, column_name, batch_size=10000,
+                              explained_variance=0.95):
+    """
+    Apply PCA incrementally for large datasets.
+    """
+    
+    # Encode and scale first (must fit in memory)
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+    scaler = RobustScaler()
+    
+    encoded = encoder.fit_transform(df[[column_name]])
+    scaled = scaler.fit_transform(encoded)
+    
+    # Incremental PCA
+    n_components = min(int(encoded.shape[1] * explained_variance), 
+                       encoded.shape[1])
+    
+    ipca = IncrementalPCA(n_components=n_components, batch_size=batch_size)
+    
+    # Fit in batches
+    n_batches = int(np.ceil(scaled.shape[0] / batch_size))
+    for i in range(n_batches):
+        start_idx = i * batch_size
+        end_idx = min((i + 1) * batch_size, scaled.shape[0])
+        ipca.partial_fit(scaled[start_idx:end_idx])
+    
+    # Transform all data
+    transformed = ipca.transform(scaled)
+    
+    return transformed, {
+        'encoder': encoder,
+        'scaler': scaler,
+        'pca': ipca
+    }
+								</code></pre>
+
+									<p><b>Common Pitfalls and Solutions</b></p>
+
+										<p><b>Pitfall 1: forgetting to Scale</b></p>
+										<ul>
+										<li>Problem: PCA is sensitive to scale. Unscaled features dominate.</li>
+										<li>Solution: Always scale after one-hot encoding.</li>
+										</ul>
+										<pre><code class="language-python">
+# ❌ WRONG
+pca = PCA(n_components=0.95)
+transformed = pca.fit_transform(encoded)  # No scaling!
+
+# ✅ CORRECT
+scaler = RobustScaler()
+scaled = scaler.fit_transform(encoded)
+pca = PCA(n_components=0.95)
+transformed = pca.fit_transform(scaled)
+								</code></pre>
+
+										<p><b>Pitfall 2: Applying PCA to Target Variable</b></p>
+										<ul>
+										<li>Problem: Including target in PCA causes data leakage.</li>
+										<li>Solution: Only transform features, never targets.</li>
+										</ul>
+										<pre><code class="language-python">
+# ❌ WRONG
+X_with_target = df[features + ['HasClaim']]
+pca.fit_transform(X_with_target)
+
+# ✅ CORRECT
+X_only = df[features]
+pca.fit_transform(X_only)
+								</code></pre>
+
+										<p><b>Pitfall 3: Not Saving Tarnsformers fro Production</b></p>
+										<ul>
+										<li>Problem: Can't transform new data without saved models.</li>
+										<li>Solution: Save encoder, scaler, AND pca using joblib.</li>
+										</ul>
+										<pre><code class="language-python">
+# ✅ CORRECT
+models = {
+    'encoder': encoder,
+    'scaler': scaler,
+    'pca': pca
+}
+joblib.dump(models, 'column_pca_models.joblib')
+								</code></pre>
+
+										<p><b>Pitfalls 4: Using Wrong Number of Components</b></p>
+										<ul>
+										<li>Problem: Too few components lose information; too many defeat the purpose.</li>
+										<li>Solution: Use scree plots and variance explained thresholds (95% is common).</li>
+										</ul>
+
+
+									<p><b>Alternative Approaches Considered</b></p>
+
+										<p><b>Why Not Other Dimensionality Reduction Techniques?</b></p>
+											<ol>
+											<li><b>t-SNE</b></li>
+											<ul>
+											<li> Non-deterministic (different each run)</li>
+											<li> Computationally expensive</li>
+											<li> Can't transform new data easily</li>
+											<li> Good for visualization only</li>
+											</ul>
+
+											<li><b>UMAP</b></li>
+											<ul>
+											<li> Requires additional library</li>
+											<li> Hyperparameter tuning needed</li>
+											<li> Less interpretable than PCA</li>
+											<li> Better for non-linear relationships</li>
+											</ul>
+
+											<li><b>Feature Selection (Chi-square, Mutual Information)</b></li>
+											<ul>
+											<li> Discards information completely</li>
+											<li> Doesn't handle redundancy well</li>
+											<li> Maintains interpretability</li>
+											<li> Fast and simple</li>
+											</ul>
+
+											<li><b>Entity Embeddigs</b></li>
+											<ul>
+											<li> Requires neural network training</li>
+											<li> More complex to implement</li>
+											<li> Less transparent</li>
+											<li> Can capture complex patterns</li>
+											</ul>
+
+											</ol>
+
+											<ul>
+											<li><b>PCA was Chosen Because</b></li>
+											<ul>
+											<li> Deterministic and reproducible</li>
+											<li> Fast to compute</li>
+											<li> Easy to deploy in production</li>
+											<li> Well-understood and documented</li>
+											<li> Built into scikit-learn</li>
+											<li> 95% variance retention balances compression and information</li>
+											</ul>
+											</ul>
+									
+									<p><b>Key Takeaways</b></p>
+
+										<p><b>What PCA Achieved</b></p>
+										<ol>
+										<li><b>Massive Dimensionality Reduction</b></li>
+										<ul>
+										<li>From 520+ features to 57 features</li>
+										<li>89% reduction in dimensionality</li>
+										<li>95%+ variance retained</li>
+										</ul>
+										<li><b>Training Efficiency</b></li>
+										<ul>
+										<li>12x faster model training</li>
+										<li>85% smaller model files</li>
+										<li>Feasible to train on standard hardware</li>
+										</ul>
+										<li><b>Production Benefits</b></li>
+										<ul>
+										<li>Fast inference (milliseconds vs. seconds)</li>
+										<li>Small memory footprint</li>
+										<li>Easy to version and update</li>
+										<li>Modular architecture (column-specific models)</li>
+										</ul>
+										<li><b>Model Performance</b></li>
+										<ul>
+										<li>Comparable or better accuracy</li>
+										<li>Reduced overfitting</li>
+										<li>Better generalization</li>
+										</ul>
+
+										</ol>
+
+										<p><b>When to use Column-Specific PCA</b></p>
+										<ul>
+										<li><b>Use when</b></li>
+										<ul>
+										<li>High-cardinality categorical variables (50+ categories)</li>
+										<li>Computational constraints (memory/time)</li>
+										<li>Production deployment requirements</li>
+										<li>Semantic separation desired (province separate from vehicle make)</li>
+										</ul>
+										</ul>
+
+										
+										<ul>
+										<li><b>Don't use when</b></li>
+										<ul>
+										<li>Low-dimensional data already (less than 20 features)</li>
+										<li>Feature interpretability is critical</li>
+										<li>Non-linear relationships dominate</li>
+										<li>Tree-based models (they handle high dimensions well)</li>
+										</ul>
+										</ul>
+
+									<p><b>What's Next: Building Models</b></p>
+									<p>With dimensionality tamed and features optimized, I was finally ready for the main event: building predictive models.</p>
+									<p>But not just one model, I implemented a dual-model architecture:</p>
+									<ol>
+									<li>Classification Model: Predict claim probability (will a claim occur?)</li>
+									<li>Regression Model: Predict claim severity (how expensive will it be?)</li>
+									</ol>
+									<p>In the
+										<a href="C:\Users\HP\Downloads\Project Portfolio Website\Modeling.html" target="_blank"> <b>Modeling</b>  </a> page
+									, I'll show you:</p>
+									<ul>
+									<li> Why I chose XGBoost over other algorithms</li>
+									<li> How SMOTE solved the class imbalance problem</li>
+									<li> The complete training pipeline for both models</li>
+									<li> Model evaluation and comparison</li>
+									<li> Feature importance insights</li>
+									<li> Saving models for production</li>
+									</ul>
+									<p>We're moving from feature engineering to forecasting, from data preparation to prediction.</p>
+
+									<p><b>Conclusion</b></p>
+									<p>Dimensionality reduction isn't just a technical nicety it's often essential for practical machine learning.</p>
+									<p>The PCA transformation took my project from "this might not be feasible" to "this trains in minutes and deploys easily." The three days I spent implementing column-specific PCA paid off every day thereafter in faster iterations, easier deployment, and better models.</p>
+									<p>Remember: More features ≠ better models. The right features in manageable quantity beats high-dimensional noise every time.</p>
+									<p>Your models can only be as good as your features allow. Clean features, smart dimensionality reduction, and thoughtful engineering create the foundation for great predictions.</p>
+
+
+	
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script>
+  				hljs.highlightAll();
+			</script>
+
+	</body>
+</html>

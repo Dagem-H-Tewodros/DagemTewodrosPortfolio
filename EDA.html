@@ -1,0 +1,969 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>New York Real Estate Price Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+			pre {
+    background: #f6f8fa;        /* light gray background */
+    padding: 15px;              /* space inside the box */
+    border-radius: 8px;         /* rounded corners */
+    overflow-x: auto;           /* horizontal scroll if needed */
+    font-size: 14px;            /* readable size */
+    line-height: 1.5;
+}
+
+code {
+    font-family: Consolas, Monaco, monospace; /* clean coding font */
+}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Deep Dive into Insurance Data: A Comprehensive Exploratory Data Analysis</h1>
+							<p><b>Executive Summary</b></p>
+							<p>Understanding the patterns, anomalies, and relationships within insurance data is crucial for building robust pricing models, identifying risk factors, and optimizing business operations. This comprehensive exploratory data analysis examines nearly 1 million insurance policies, uncovering critical insights about loss ratios, claim patterns, vehicle characteristics, and temporal trends.</p>
+							<p>Our analysis reveals several striking findings:</p>
+							<ul>
+							<li>Gauteng province: shows a concerning 122% loss ratio, meaning claims exceed premiums</li>
+							<li>SUZUKI vehicles: exhibit an alarming 634% loss ratio, indicating severe underpricing</li>
+							<li>Male policyholders: generate 107% loss ratio compared to 75% for females</li>
+							<li>Own Damage coverage: produces 158% loss ratio, suggesting pricing inadequacy</li>
+							<li>Temporal patterns: show claim frequency peaked in November 2014 at 3.71 per 1,000 policies</li>
+							</ul>
+
+							<p>This analysis provides the foundation for data-driven decision-making in pricing, underwriting, and risk management.</p>
+
+
+							<p class="tools-header">Tools used:</p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/Insurance-Risk-Modeling">GitHub</a></p>
+							<span class="image main"><img src="images/EDA.png" alt="" /></span>
+	
+							<p><b>1. Introduction & Business Context</b></p>
+							<p><b>The Challenge</b></p>
+							<p>Insurance companies operate on a delicate balance: premiums must cover claims while remaining competitive. When this balance tips unfavorably, entire business segments can become unprofitable. Loss ratio the ratio of claims paid to premiums collected is the primary metric for assessing this balance.</p>
+
+							<p><b>Loss Ratio Formula</b></p>
+							<pre><code class="language-python">
+Loss Ratio = (Total Claims / Total Premium) × 100%
+							</code></pre>
+
+							<p><b>Interpretation:</b></p>
+							<ul>
+							<li> Loss Ratio < 100%: Profitable segment (premiums exceed claims)</li>
+							<li> Loss Ratio = 100%: Break-even</li>
+							<li> Loss Ratio > 100%: Unprofitable segment (claims exceed premiums)</li>
+							</ul>
+ 
+							<p><b>2. Data Overview & Quality Assessment</b></p>
+							<p><b>Data Loading & Preparation</b></p>
+
+							<pre><code class="language-python">
+import pandas as pd
+import numpy as np
+from IPython.display import display
+
+# Load the dataset
+df = pd.read_csv("cleaned_insurance_data.csv", sep=None, engine='python')
+
+# Ensure numeric types safely
+df['TotalClaims'] = pd.to_numeric(df['TotalClaims'], errors='coerce')
+df['TotalPremium'] = pd.to_numeric(df['TotalPremium'], errors='coerce')
+							</code></pre>
+
+							<p><b>Data Quality Issue: Invalid Premium Records</b></p>
+							<p>A critical data quality issue was identified:</p>
+							
+							<pre><code class="language-python">
+import pandas as pd
+import numpy as np
+from IPython.display import display
+
+# Load the dataset
+df = pd.read_csv("cleaned_insurance_data.csv", sep=None, engine='python')
+
+# Ensure numeric types safely
+df['TotalClaims'] = pd.to_numeric(df['TotalClaims'], errors='coerce')
+df['TotalPremium'] = pd.to_numeric(df['TotalPremium'], errors='coerce')								
+							</code></pre>
+							
+							<p><b>Data Quality Issue: Invalid Premium Records</b></p>
+							<p>A critical data quality issue was identified:</p>
+							<pre><code class="language-python">
+# Flag rows where claims exist but premium is zero
+df['InvalidPremiumFlag'] = ((df['TotalClaims'] > 0) & (df['TotalPremium'] == 0)).astype(int)
+								
+# Check flagged count
+flagged_count = df['InvalidPremiumFlag'].sum()
+print(f"Number of flagged rows: {flagged_count}")								
+							</code></pre>
+
+							<p><b>Output:</b></p>
+							<pre><code class="language-python">
+Number of flagged rows: 150
+							</code></pre>
+
+							<p><strong>Business Implication </strong> 150 policies (0.015% of total) have claims but zero premium.</p>
+							
+							<p>These likely represent:</p>
+							<ul>
+							<li> Data entry errors</li>
+							<li> Free trial policies</li>
+							<li> Special promotional offers</li>
+							<li> System errors during premium calculation</li>
+							</ul>
+
+							<p>Action Taken: These records were excluded from loss ratio calculations to prevent infinite loss ratios:</p>
+
+							<pre><code class="language-python">
+# Exclude rows with invalid premium
+valid_df = df[df['InvalidPremiumFlag'] == 0]
+							</code></pre>
+
+							<p><b>Key Numeric Variables Summary</b></p>
+							<pre><code class="language-python">
+numeric_cols = [
+    'SumInsured',
+    'CalculatedPremiumPerTerm',
+    'TotalPremium',
+    'TotalClaims',
+    'CustomValueEstimate'
+]
+
+# Convert to numeric safely
+for col in numeric_cols:
+    df[col] = pd.to_numeric(df[col], errors='coerce')
+
+# Compute summary statistics
+summary_stats = df[numeric_cols].describe(
+    percentiles=[0.25, 0.5, 0.75, 0.95, 0.99]
+).T
+
+# Add skewness and kurtosis
+summary_stats['Skew'] = df[numeric_cols].skew()
+summary_stats['Kurtosis'] = df[numeric_cols].kurt()
+
+summary_stats = summary_stats.round(2)								
+							</code></pre>
+
+							<p><b>Key Statistics:</b></p>
+
+							<figure>
+    <img src="images/Summary statistics for Numeric Columns.png" alt="Summary statistics for Numeric Columns" width="1000">
+    <figcaption>Figure 1: Summary statistics for Numeric Columns.</figcaption>
+</figure>
+
+
+							<p><b>Key Observations:</b></p>
+							<ol>
+							<li><strong>Extreme Right Skew</strong>: All variables show positive skew, indicating long right tails (few very high values)</li>
+							<li><strong>High Kurtosis</strong>: Extremely heavy tails, especially for premium variables</li>
+							<li><strong>Claims Concentration</strong>: Median TotalClaims = R0 (most policies have no claims)</li>
+							<li><strong>Premium Variability</strong>: Huge range from R0 to R65,283 per policy</li>
+							</ol>
+
+							<p><b>3. Loss Ratio Analysis by Segment</b></p>
+							<p><b>Methodology</b></p>
+							<p>We calculate loss ratios at various aggregation levels to identify problematic segments:</p>
+
+							<pre><code class="language-python">
+# Define grouping dimensions
+group_cols = ['Province', 'make', 'Gender', 'CoverType', 'CoverGroup']
+
+# Aggregate by all grouping variables
+loss_ratio_by_segment = (
+    df.groupby(group_cols, dropna=False)
+      .agg(
+          TotalClaims=('TotalClaims', 'sum'),
+          TotalPremium=('TotalPremium', 'sum'),
+          RowCount=('TotalPremium', 'count')
+      )
+      .reset_index()
+)
+
+# Compute loss ratio safely
+loss_ratio_by_segment['LossRatio'] = (
+    loss_ratio_by_segment['TotalClaims'] / loss_ratio_by_segment['TotalPremium']
+) * 100
+
+# Handle inf/nan
+loss_ratio_by_segment['LossRatio'] = (
+    loss_ratio_by_segment['LossRatio']
+    .replace([np.inf, -np.inf], np.nan)
+    .fillna(0)
+)
+
+# Sort by Loss Ratio descending
+loss_ratio_by_segment = loss_ratio_by_segment.sort_values('LossRatio', ascending=False)								
+							</code></pre>
+
+							<p><b>3.1 Loss Ratio by Province</b></p>
+							<p><b>Results:</b></p>
+							
+							<figure>
+    <img src="images/Loss Ratio By Province BarChart.png" alt="Loss Ratio By Province BarChart" width="700">
+    <figcaption>Figure 2: Loss Ratio By Province BarChart.</figcaption>
+</figure>
+
+							<p><b>Critical Insights:</b></p>
+							<ol>
+							<li><strong> Top 3 Provinces are Unprofitable:</strong></li>
+							<ul>
+							<li> Gauteng: Losing R22.3 for every R100 in premium</li>
+							<li> KwaZulu-Natal: Losing R7.8 per R100</li>
+							<li> Western Cape: Losing R6.0 per R100</li>
+							</ul>
+
+							<li><strong> Geographic Risk Gradient:</strong></li>
+							<ul>
+							<li> Highly urbanized provinces (Gauteng, WC, KZN) = unprofitable</li>
+							<li> Rural provinces (Northern Cape, Eastern Cape, Limpopo) = profitable</li>
+							</ul>
+
+							<li><strong> Volume vs. Profitability Trade-off:</strong></p>
+							<ul>
+							<li> Gauteng has 39.4% of all policies but 45.3% of all claims</li>
+							<li> Northern Cape has lowest volume but best loss ratio</li>
+							</ul>
+
+							</ol>
+
+							<p><strong>Business Recommendation:</strong> Urgent premium increases of 15-25% needed in Gauteng, KwaZulu-Natal, and Western Cape.</p>
+
+							<p><b>3.2 Loss Ratio by Vehicle Make</b></p>
+							<p><b>Top 10 Worst Performers:</b></p>
+							
+							<figure>
+    <img src="images/Loss Ratio by Make.png" alt="Loss Ratio by Make" width="700">
+    <figcaption>Figure 3: Loss Ratio by Make.</figcaption>
+</figure>
+
+							<p><strong>Shocking Finding</strong>: SUZUKI vehicles show a 633.82% loss ratio losing R6.34 for every R1.00 in premium collected!</p>
+
+							<p><b>Analysis by Vehicle Category:</b></p>
+							<ul>
+							<li>Luxury brands (Audi, BMW): High loss ratios despite premium pricing</li>
+							<li>Commercial vehicles(Iveco, CMC): Moderate loss ratios but high claim amounts</li>
+							<li>Budget brands (Suzuki, Hyundai): Catastrophic loss ratios</li>
+							</ul>
+
+							<p><b>Best Performers (Zero Claims):</b></p>
+							<ul>
+							<li>15 vehicle makes had zero claims despite collecting premiums:</li>
+							<li> OPEL, PEUGEOT, TATA, PROTON, SCANIA, RENAULT, KIA, MAHINDRA, LEXUS, HUMMER, HONDA, HINO, GEELY, FORD, DAIHATSU, CITROEN, CHERY, VOLVO</li>
+							</ul>
+
+							<p><strong>Note:</strong> These zero-claim makes likely have very small sample sizes or short observation periods.</p>
+							
+							<p><b>3.3 Loss Ratio by Gender</b></p>
+							
+							<figure>
+    <img src="images/Loss Ratio By Gender BarChart.png" alt="Loss Ratio By Gender BarChart" width="700">
+    <figcaption>Figure 4: Loss Ratio By Gender BarChart.</figcaption>
+</figure>
+
+							<p><b>Key Findings:</b></p>
+							<ol>
+							<li>Male policyholders are unprofitable: 107.41% loss ratio</li>
+							<li>Female policyholders are profitable: 74.72% loss ratio (25% profit margin)</lip>
+							<li>Gender gap: 32.7 percentage point difference in loss ratios</li>
+							<li>Data quality issue: "Not specified" category shows 186% loss ratio, suggesting adverse selection</li>
+							</ol>
+
+							<p><b>Portfolio Composition:</b></p>
+							<ul>
+							<li> Males: 92.4% of all policies</li>
+							<li> Females: 6.6% of all policies</li>
+							<li> Not specified: 0.08%</li>
+							</ul>
+
+							<p><strong>Business Implication:</strong> The gender imbalance (92% male) combined with male unprofitability means the overall portfolio is losing money.</p>
+
+							<p><b>3.4 Loss Ratio by Cover Type</b></p>
+
+							<figure>
+    <img src="images/Loss Ratio By Cover Type BarChart.png" alt="Loss Ratio By Cover Type BarChart" width="700">
+    <figcaption>Figure 5: Loss Ratio By Cover Type BarChart.</figcaption>
+</figure>
+
+							<p><b>Critical Discovery:</b></p>
+							<p>Own Damage coverage is catastrophically underpriced at 157.73% loss ratio:</p>
+							<ul>
+							<li> Represents 91% of all claims (R59M out of R64.9M)</li>
+							<li> Only 10.4% of all policies</li>
+							<li> Losing R57.7 for every R100 in premium</li>
+							</ul>
+
+							<p>Profitable Coverage Types:</p>
+							<ul>
+							<li> Third Party: 11.80% (pure profit generator)</li>
+							<li> Credit Protection: 8.01%</li>
+							<li> Ancillary coverages (Keys, Emergency): < 10%</li>
+							</ul>
+
+							<p><strong>Recommendation:</strong> Own Damage premiums need immediate 40-60% increase, or stricter underwriting criteria.</p>
+
+							<p><b>3.5 Loss Ratio by Cover Group</b></p>
+
+							<figure>
+    <img src="images/Loss Ratio By Cover Group BarChart.png" alt="Loss Ratio By Cover Group BarChart" width="700">
+    <figcaption>Figure 6: Loss Ratio By Cover Group BarChart.</figcaption>
+</figure>
+
+							<ul>
+							<p><b>Taxi Insurance Dominates Portfolio:</b></p>
+							<li> 82.4% of all policies</li>
+							<li> 94.6% of all claims</li>
+							<li> 116.68% loss ratio (unprofitable)</li>
+							</ul>
+
+							<p>This is a taxi-focused insurance portfolio, and the taxi segment is fundamentally unprofitable.</p>
+
+							<p><b>4. Distribution Analysis of Numeric Variables</b></p>
+							<p><b>Visualization Strategy</b></p>
+							<p>To understand the distribution characteristics of key numeric variables, we employ multiple visualization techniques:</p>
+
+							<pre><code class="language-python">
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+numeric_cols = [
+    'SumInsured',
+    'CalculatedPremiumPerTerm',
+    'TotalPremium',
+    'TotalClaims',
+    'CustomValueEstimate'
+]
+
+sns.set(style="whitegrid")
+
+for col in numeric_cols:
+    fig, axes = plt.subplots(1, 4, figsize=(22, 5))
+    fig.suptitle(f"Distribution Comparison for '{col}'", fontsize=16, fontweight='bold')
+
+    # 1️⃣ Raw Boxplot
+    sns.boxplot(y=df[col], ax=axes[0], color='lightblue')
+    axes[0].set_title("Raw Boxplot")
+    axes[0].set_ylabel('')
+
+    # 2️⃣ Log-Transformed Boxplot
+    sns.boxplot(y=np.log1p(df[col]), ax=axes[1], color='salmon')
+    axes[1].set_title("Log-Transformed Boxplot")
+    axes[1].set_ylabel('')
+
+    # 3️⃣ Capped Boxplot (1%-99%)
+    capped = df[col].clip(lower=df[col].quantile(0.01), upper=df[col].quantile(0.99))
+    sns.boxplot(y=capped, ax=axes[2], color='lightgreen')
+    axes[2].set_title("Capped Boxplot (1%-99%)")
+    axes[2].set_ylabel('')
+
+    # 4️⃣ Violin Plot (Raw)
+    sns.violinplot(y=df[col], ax=axes[3], color='lightgrey')
+    axes[3].set_title("Violin Plot")
+    axes[3].set_ylabel('')
+
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.show()
+							</code></pre>
+
+							<p><b>Key Distribution Insights</b></p>
+							<p><b>All numeric variables exhibit:</b></p>
+							<ol>
+							<li>Extreme right skew (long tail of high values)</li>
+							<li>Heavy concentration near zero (median << mean)</li>
+							<li>Substantial outliers visible even after 99th percentile capping</li>
+							<li>Multimodal patterns in some variables (visible in violin plots)</li>
+							</ol>
+							
+							<p><b>Practical Implications:</b></p>
+							<ul>
+							<li> Standard linear models may perform poorly</li>
+							<li> Log transformations recommended for modeling</li>
+							<li> Outlier treatment essential for robust analysis</li>
+							<li> Separate models may be needed for different value ranges</li>
+							</ul>
+
+							<p><b>Scatter Plot Analysis</b></p>
+
+							<pre><code class="language-python">
+scatter_pairs = [
+    ('SumInsured', 'TotalPremium'),
+    ('SumInsured', 'TotalClaimAmount'),
+    ('CalculatedPremiumPerTerm', 'TotalPremium'),
+    ('TotalPremium', 'TotalClaimAmount'),
+    ('CustomValueEstimate','SumInsured')
+]
+
+plt.figure(figsize=(12, 10))
+for i, (x, y) in enumerate(scatter_pairs, 1):
+    plt.subplot(3, 2, i)
+    sns.scatterplot(data=df, x=x, y=y, alpha=0.3)
+    plt.title(f'{y} vs {x}')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlabel(x)
+    plt.ylabel(y)
+plt.tight_layout()
+plt.show()
+							</code></pre>
+
+							<p><b>Key Relationships:</b></p>
+							<ol>
+							<li>SumInsured vs TotalPremium: Strong positive correlation (higher coverage = higher premium)</li>
+							<li>TotalPremium vs TotalClaims: Weak correlation (claims don't track premiums well)</li>
+							<li>CustomValueEstimate vs SumInsured: Linear relationship for vehicles with estimates</li>
+							</ol>
+
+							<p><b>5. Temporal Patterns in Claims</b></p>
+							<p><b>Monthly Aggregation</b></p>
+							
+							<pre><code class="language-python">
+# Convert to datetime
+df['TransactionMonth'] = pd.to_datetime(df['TransactionMonth'], errors='coerce')
+
+# Extract Year-Month
+df['YearMonth'] = df['TransactionMonth'].dt.to_period('M').dt.to_timestamp()
+
+# Aggregate monthly stats
+monthly_summary = (
+    df.groupby('YearMonth')
+      .agg(
+          TotalPolicies=('PolicyID', 'count'),
+          ClaimCount=('TotalClaims', lambda x: (x > 0).sum()),
+          TotalClaimAmount=('TotalClaimAmount', 'sum')
+      )
+      .reset_index()
+)
+
+# Calculate frequencies and severity
+monthly_summary['ClaimFrequency'] = monthly_summary['ClaimCount'] / monthly_summary['TotalPolicies']
+monthly_summary['ClaimFrequency_per_1000'] = monthly_summary['ClaimFrequency'] * 1000
+monthly_summary['ClaimSeverity'] = monthly_summary['TotalClaimAmount'] / monthly_summary['ClaimCount']
+monthly_summary['ClaimSeverity'] = monthly_summary['ClaimSeverity'].fillna(0)
+							</code></pre>
+
+							<p><b>Top 22 Months by Claim Frequency</b></p>
+
+							<figure>
+    <img src="images/Top 22 month by Claim Frequency.png" alt="Top 22 month by Claim Frequency" width="700">
+    <figcaption>Figure 7: Top 22 month by Claim Frequency.</figcaption>
+</figure>
+
+							<p><b>Temporal Patterns:</b></p>
+							<ol>
+							<li>Peak Claim Period: November 2014 - April 2015 (South African summer/holiday season)</li>
+							<li>Claim Frequency Range: 0.21 to 3.71 per 1,000 policies</li>
+							<li>Seasonal Effect: Higher claims during November-April (summer travel, holidays)</li>
+							<li>Growth Pattern: Both policy count and claim count increased over time</li>
+							</ol>
+
+							<p><b>Top 22 Months by Claim Severity</b></p>
+
+							<pre><code class="language-python">
+| Month | Claim Count | Claim Severity (R) |
+|-------|-------------|-------------------|
+| **2015-08** | 22 | **46,355.40** |
+| **2014-12** | 206 | **30,279.00** |
+| **2014-03** | 12 | **26,898.75** |
+| **2015-04** | 340 | **26,696.54** |
+| **2015-07** | 261 | **25,866.72** |
+| **2013-11** | 2 | **25,292.54** |
+| **2015-05** | 297 | **23,444.81** |
+| **2015-03** | 329 | **22,720.31** |
+| **2015-01** | 250 | **21,978.09** |
+| **2015-02** | 287 | **21,838.51** |	
+							</code></pre>
+
+							<figure>
+    <img src="images/Top 22 Month by Claim Severity.png" alt="Top 22 Month by Claim Severity" width="700">
+    <figcaption>Figure 8: Top 22 Month by Claim Severity.</figcaption>
+</figure>
+
+							<p><b>Severity Insights:</b></p>
+							<ol>
+							<li>Highest Severity: August 2015 (R46,355 per claim) likely few but very expensive claims</li>
+							<li>Average Severity Range: R3,094 to R46,355</li>
+							<li>No Clear Seasonal Pattern: Severity varies independently of frequency</li>
+							<li>Late 2014/Early 2015 Spike: Multiple months with R20K+ average claims</li>
+							</ol>
+
+							<p><b>Temporal Trend Visualization</b></p>
+							<p>The line plots reveal:</p>
+							<ul>
+							<li>Claim frequency shows volatility but overall upward trend</li>
+							<li>Claim severity highly volatile month-to-month</li>
+							<li>No strong correlation between frequency and severity trends</li>
+							</ul>
+
+							<p><b>6. Vehicle-Level Risk Assessment</b></p>
+							<p><b>6.1 Analysis by Vehicle Model</b></p>
+							<p><b>Highest Average Claim Models</b></p>
+
+							<figure>
+    <img src="images/Models with highest Claim Amount Bar Chart.png" alt="Models with highest Claim Amount Bar Chart" width="700">
+    <figcaption>Figure 9: Models with highest Claim Amount Bar Chart.</figcaption>
+</figure>
+
+							<p><strong>Insight:</strong> Large commercial vehicles (Sprinter, Ducato) and luxury SUVs (Land Cruiser) show highest average claims.</p>
+
+
+							<p><b>Lowest Average Claim Models</b></p>
+
+							<figure>
+    <img src="images/Models With the least Claim Amount Bar Chart .png" alt="Models With the least Claim Amount Bar Chart" width="700">
+    <figcaption>Figure 10: Models With the least Claim Amount Bar Chart.</figcaption>
+</figure>
+
+							<p><strong>Note:</strong> Low sample sizes (n=1) make these less reliable.</p>
+
+							<p><b>Models with Least Claims</b></p>
+
+							<figure>
+    <img src="images/Models with the Lowest Claim Amount Bar Chart .png" alt="Models with the Lowest Claim Amount Bar Chart" width="700">
+    <figcaption>Figure 11: Models with the Lowest Claim Amount Bar Chart.</figcaption>
+</figure>
+
+							<p><strong>Remarkable:</strong> These models have substantial policy counts but zero claims over the observation period.</p>
+
+							<p><b>6.2 Analysis by Vehicle Make</b></p>
+							<p><b>Highest Average Claim Makes</b></p>
+
+							<figure>
+    <img src="images/Makes with the highest claim amount bar chart.png" alt="Makes with the highest claim amount bar chart" width="700">
+    <figcaption>Figure 12: Makes with the highest claim amount bar chart.</figcaption>
+</figure>
+
+							<p><strong>Pattern:</strong> Mix of luxury brands (Audi, Mercedes-Benz) and commercial vehicle manufacturers (Iveco, Golden Journey).</p>
+
+							<p><b>Lowest Average Claim Makes (with claims)</b></p>
+							
+							<figure>
+    <img src="images/Makes with the Lowest Claim Amount Bar chart .png" alt="Makes with the Lowest Claim Amount Bar chart" width="700">
+    <figcaption>Figure 13: Makes with the Lowest Claim Amount Bar chart.</figcaption>
+</figure>
+
+							<p><b>7. Correlation & Relationship Analysis</b></p>
+							<p><b>7.1 Numeric Correlation (Pearson)</b></p>
+
+							<pre><code class="language-python">
+from scipy.stats import chi2_contingency
+
+# Select columns of interest
+cols = [
+    'TotalPremium',
+    'TotalClaims',
+    'CoverCategory',
+    'CoverType',
+    'CoverGroup',
+    'Section',
+    'Product',
+    'Province',
+    'Gender'
+]
+
+df_corr = df[cols].copy()
+
+# Separate numeric and categorical
+num_cols = df_corr.select_dtypes(include=['number']).columns
+cat_cols = df_corr.select_dtypes(exclude=['number']).columns
+
+# Numeric-Numeric Correlation
+num_corr = df_corr[num_cols].corr(method='pearson')
+							</code></pre>
+
+							<p><b>Results:</b></p>
+							<pre><code class="language-python">
+|  | TotalPremium | TotalClaims |
+|--|--------------|-------------|
+| **TotalPremium** | 1.00 | **0.12** |
+| **TotalClaims** | **0.12** | 1.00 |
+							</code></pre>
+
+							
+							<p><strong>Critical Finding:</strong> Only 12% correlation between premiums and claims at the policy level. This indicates:</p>
+							<ul>
+							<li> Premiums are not strongly predictive of claims</li>
+							<li> Current pricing model may not adequately capture risk</li>
+							<li> Need for more sophisticated rating factors</li>
+							</ul>
+
+							<p><b>7.2 Mixed-Type Correlation</b></p>
+							<pre><code class="language-python">
+# Encode categorical variables numerically
+encoded = df_corr.copy()
+for col in cat_cols:
+    encoded[col] = encoded[col].astype('category').cat.codes
+
+mixed_corr = encoded.corr(method='pearson')
+							</code></pre>
+
+							<p><b>Categorical Variables vs. Premiums/Claims:</b></p>
+
+							<pre><code class="language-python">
+|  | CoverCategory | CoverType | CoverGroup | Section | Product | Province | Gender |
+|--|---------------|-----------|------------|---------|---------|----------|--------|
+| **TotalPremium** | 0.05 | 0.06 | 0.02 | -0.04 | -0.03 | -0.02 | -0.01 |
+| **TotalClaims** | 0.00 | 0.01 | 0.00 | -0.01 | -0.00 | -0.00 | 0.00 |
+
+							</code></pre>
+							<p><strong>Interpretation:</strong> Very weak linear relationships between categorical variables and numeric outcomes when encoded.</p>
+
+							<p> 7.3 Cramér's V (Categorical-Categorical Correlation)</p>
+
+							<pre><code class="language-python">
+def cramers_v(x, y):
+    """Compute Cramér's V statistic for categorical association"""
+    confusion_matrix = pd.crosstab(x, y)
+    chi2 = chi2_contingency(confusion_matrix)[0]
+    n = confusion_matrix.sum().sum()
+    phi2 = chi2 / n
+    r, k = confusion_matrix.shape
+    phi2corr = max(0, phi2 - ((k - 1)*(r - 1))/(n - 1))
+    rcorr = r - ((r - 1)**2)/(n - 1)
+    kcorr = k - ((k - 1)**2)/(n - 1)
+    return np.sqrt(phi2corr / min((kcorr - 1), (rcorr - 1)))
+
+# Calculate Cramér's V for all categorical pairs
+cat_corr = pd.DataFrame(index=cat_cols, columns=cat_cols, dtype=float)
+for c1 in cat_cols:
+    for c2 in cat_cols:
+        if c1 == c2:
+            cat_corr.loc[c1, c2] = 1.0
+        else:
+            cat_corr.loc[c1, c2] = cramers_v(df_corr[c1].astype(str), df_corr[c2].astype(str))
+							</code></pre>
+
+							<p><b>Key Associations:</b></p>
+							<pre><code class="language-python">
+| Variable Pair | Cramér's V | Interpretation |
+|---------------|------------|----------------|
+| **CoverCategory ↔ CoverType** | 0.99 | Nearly perfect association |
+| **CoverType ↔ CoverGroup** | 0.94 | Very strong association |
+| **CoverGroup ↔ Section** | 1.00 | Perfect association |
+| **Product ↔ CoverGroup** | 0.77 | Strong association |
+| **Gender ↔ CoverGroup** | 0.22 | Weak-moderate association |
+| **Province ↔ Gender** | 0.08 | Very weak association |
+							</code></pre>
+							
+							<p><strong>Business Insight:</strong> Coverage-related fields are highly redundant (multicollinearity concern for modeling). Geographic and demographic factors are largely independent.</p>
+
+							<p><b>. Provincial Deep Dive</b></p>
+							<p>Comprehensive Provincial Summary</p>
+
+							<pre><code class="language-python">
+def most_common(series):
+    """Return most frequent value"""
+    return series.mode().iloc[0] if not series.mode().empty else np.nan
+
+province_summary = (
+    df.groupby('Province')
+      .agg(
+          MostCommonCoverType=('CoverType', most_common),
+          TotalPremium=('TotalPremium', 'sum'),
+          AvgPremium=('TotalPremium', 'mean'),
+          MostCommonMake=('make', most_common),
+          MostCommonModel=('Model', most_common),
+          TotalClaims=('TotalClaimAmount', 'sum'),
+          ClaimCount=('TotalClaimAmount', lambda x: (x > 0).sum()),
+          PolicyCount=('PolicyID', 'count')
+      )
+      .reset_index()
+)
+
+# Derived Metrics
+province_summary['ClaimFrequency per 1000'] = (
+    province_summary['ClaimCount'] / province_summary['PolicyCount'] * 1000
+)
+province_summary['ClaimSeverity'] = (
+    province_summary['TotalClaims'] / province_summary['ClaimCount']
+).replace([np.inf, np.nan], 0)
+							</code></pre>
+
+							<p><b>Complete Provincial Profile:</b></p>
+				
+							<figure>
+    <img src="images/Provincal Summary Tabel.png" alt="Provincal Summary Tabel" width="1000">
+    <figcaption>Figure 14: Provincal Summary Tabel.</figcaption>
+</figure>
+
+							<p><b>Provincial Insights:</b></p>
+							<ol>
+							<li>TOYOTA QUANTUM Dominates: Every province's most common vehicle is a Toyota Quantum taxi</li>
+							<li>Gauteng Anomaly: Only province where "Own Damage" is most common coverage (vs Third Party elsewhere)</li>
+							<li>Claim Frequency Leaders: Gauteng (3.36) and KZN (2.84) per 1,000 policies</li>
+							<li>Severity Champions: KZN (R29,609) and Free State (R32,266) have highest average claim amounts</li>
+							<li>Premium Variation: 59% difference between highest (KZN: R78.12) and lowest (Northern Cape: R49.62)</li>
+							</ol>
+
+
+							<p><b>9. Key Insights & Strategic Recommendations</b></p>
+							<p><b>9.1 Portfolio-Level Crisis</b></p>
+
+							<p><b>Current State:</b></p>
+							<ul>
+							<li> Overall loss ratio: 104.7% (losing money)</li>
+							<li> Total claims: R64.90M</li>
+							<li> Total premiums: R61.97M</li>
+							<li> Net loss: R2.93M over 23 months</li>
+							</ul>
+
+							<p><b>Root Causes:</b></p>
+							<ol>
+							<li>Geographic concentration in unprofitable provinces (Gauteng, KZN, WC)</li>
+							<li>Product mix heavily weighted toward unprofitable Own Damage coverage</li>
+							<li>Gender imbalance with 92% male policyholders (who are unprofitable)</li>
+							<li>Vehicle make concentration in high-risk brands</li>
+							</ol>
+
+							<p><b>9.2 Urgent Actions Required</b></p>
+							<p><b>Immediate (0-30 days):</b></p>
+							<ol>
+							<li><b>Premium Increases:</b></li>
+							<ul>
+							<li> Gauteng: +22% minimum</li>
+							<li> KwaZulu-Natal: +8%</li>
+							<li> Western Cape: +6%</li>
+							</ul>
+
+							<li><b>Own Damage Re-pricing:</b></li>
+							<ul>
+							<li> Increase premiums by 40-60%</li>
+							<li> Or restrict to lower-risk vehicles only</li>
+							</ul>
+
+							<li><b>Vehicle Make Restrictions:</b></li>
+							<ul>
+							<li> Suspend new policies for SUZUKI (634% loss ratio)</li>
+							<li> Review underwriting for JMC, HYUNDAI, POLARSUN</li>
+							<li> Require additional safety features for Audi/BMW</li>
+							</ul>
+
+							<li><b>Gender-Based Pricing (where legal):</b></li>
+							<ul>
+							<li> Increase male premiums by 15%</li>
+							<li> Or offer discounts for females to balance portfolio</li>
+							</ul>
+
+							</ol>
+
+							<p><b>Medium-term (1-6 months):</b></p>
+							<ol>
+							<li><b>Enhanced Data Collection:</b></li>
+							<ul>
+							<li> Driver age and experience</li>
+							<li> Annual mileage</li>
+							<li> Usage patterns (business vs. personal)</li>
+							<li> Parking location (secured vs. street)</li>
+							</ul>
+
+							<li><b>Telematics Program:</b></li>
+							<ul>
+							<li> Pilot usage-based insurance</li>
+							<li> Target high-frequency segments (Gauteng males)</li>
+							</ul>
+
+							<li><b>Claims Management:</b></li>
+							<ul>
+							<li> Investigate high-severity claims in KZN/Free State</li>
+							<li> Implement fraud detection for "Not Specified" gender category</li>
+							<li> Partner with approved repair shops for cost control</li>
+							</ul>
+
+							</ol>
+
+							<p><b>Long-term (6-12 months):</b></p>
+							<ol>
+							<li><b>Portfolio Rebalancing:</b></li>
+							<ul>
+							<li> Grow female policyholder base</li>
+							<li> Expand in profitable provinces (Northern Cape, Eastern Cape)</li>
+							<li> Cross-sell profitable Third Party coverage</li>
+							</ul>
+
+							<li><b>Predictive Modeling:</b></li>
+							<ul>
+							<li> Build ML models using all available features</li>
+							<li> Develop granular risk scores by micro-segment</li>
+							<li> Implement dynamic pricing</li>
+							</ul>
+
+							<li><b>Product Innovation:</b></li>
+							<ul>
+							<li> Usage-based micro-insurance for infrequent drivers</li>
+							<li> Package deals (e.g., comprehensive + tracking device)</li>
+							<li> Community-based group policies for taxi associations</li>
+							</ul>
+
+							</ol>
+
+							<p><b>9.3 Temporal Strategy</b></p>
+							<p><b>Seasonal Adjustments:</b></p>
+							<ul>
+							<li> Increase premiums 10-15% for policies issued in October-November</li>
+							<li> Promote claims-prevention campaigns during high-frequency months</li>
+							<li> Offer incentives for policy renewals in low-claim months</li>
+							</ul>
+
+							<p><b>9.5 Monitoring Framework</b></p>
+							<p><b>Key Metrics to Track Monthly:</b></p>
+
+							<pre><code class="language-python">
+| Metric | Current | Target (6 months) | Target (12 months) |
+|--------|---------|-------------------|-------------------|
+| Overall Loss Ratio | 104.7% | 95% | 85% |
+| Gauteng Loss Ratio | 122.3% | 105% | 95% |
+| Own Damage Loss Ratio | 157.7% | 110% | 90% |
+| Male Loss Ratio | 107.4% | 100% | 92% |
+| Claim Frequency (per 1000) | 2.6 | 2.3 | 2.0 |
+| Average Claim Severity | R22,200 | R20,000 | R18,000 |
+							</code></pre>
+
+							<p><b>10. Conclusion</b></p>
+							<p>This comprehensive EDA has revealed a fundamentally unprofitable insurance portfolio with several critical risk factors:</p>
+
+							<p><b>Summary of Findings</b></p>
+							<ol>
+							<li><strong>Geographic Risk:</strong> Top 3 provinces (representing 73% of portfolio) are all unprofitable</li>
+							<li><strong>Product Risk:</strong> Own Damage coverage losing 58% on every policy</li>
+							<li><strong>Demographic Risk:</strong> Male policyholders (92% of portfolio) generate 107% loss ratio</li>
+							<li><strong>Vehicle Risk:</strong> Multiple makes showing >200% loss ratios (SUZUKI at 634%)</li>
+							<li><strong>Temporal Risk:</strong> Clear seasonal patterns with November-April spike</li>
+							<li><strong>Pricing Disconnect:</strong> Only 12% correlation between premiums and claims</li>
+							</ol>
+
+							<p><b>The Path Forward</b></p>
+							<p>This portfolio requires immediate intervention. Without action, monthly losses of approximately R127,000 will continue. The good news: we now have data-driven insights to guide precise interventions.</p>
+
+							<p><b>Success Factors:</b></p>
+							<ul>
+							<li> Clear identification of unprofitable segments</li>
+							<li> Quantified impact of each risk factor</li>
+							<li> Prioritized action plan with specific targets</li>
+							<li> Foundation for ongoing monitoring and refinement</li>
+							</ul>
+
+							<p><b>Closing Thought</b></p>
+							<p>Insurance profitability isn't about avoiding risk—it's about pricing risk accurately. This analysis provides the roadmap for transforming a loss-making portfolio into a sustainable, profitable business through:</p>
+							<ol>
+							<li>Data-driven pricing that reflects true risk</li>
+							<li>Proactive portfolio management to balance risk and volume</li>
+							<li>Continuous monitoring to adapt to changing patterns</li>
+							<li>Investment in technology (telematics, ML models) for next-generation pricing</li>
+							</ol>
+
+							<p>The insights uncovered here represent not just problems to solve, but opportunities to build competitive advantage through superior risk understanding.</p>
+
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script>
+  				hljs.highlightAll();
+			</script>
+
+	</body>
+</html>

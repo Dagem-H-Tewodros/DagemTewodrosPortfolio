@@ -1,0 +1,392 @@
+<!DOCTYPE HTML>
+<!--
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>New York Real Estate Price Analysis</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.tools-header {
+				font-weight: bold;
+				font-size: 1.25em;
+				line-height: 1.0;
+			}
+			.tools-item {
+				font-weight: bold;
+				margin-left: 70px;
+				line-height: 1.0;
+			}
+			.tools-item a {
+				font-weight: normal;
+			}
+			.tools-item a {
+            font-weight: normal;
+            color: rgba(0, 89, 255, 0.873);
+            text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="inner">
+
+							<!-- Logo -->
+								<a href="index.html" class="logo">
+									<span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Project</span>
+								</a>
+
+							<!-- Nav -->
+								<nav>
+									<ul>
+										<li><a href="#menu">Menu</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<h2>Menu</h2>
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li><a href="About Me.html">About Me</a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<h1>Data Cleaning in Insurance Analytics</h1>
+							<p>How I cleaned 376,719 zero-premium records and transformed messy operational data into a model-ready dataset.</p>
+							<p><b>Introduction</b></p>
+							<p>Let's talk about the part of data science that nobody puts on their resume: data cleaning.</p>
+							<p>You've probably heard the stat: data scientists spend 80% of their time cleaning data and only 20% on analysis and modeling. When I started my insurance analytics project, I thought that was an exaggeration. I was wrong.</p>
+							<p>The first time I loaded the raw dataset, I discovered 376,719 policy records with zero premium values. Not missing values but actual zeros. My initial reaction was panic: "Is this entire dataset corrupted?" The investigation that followed taught me more about data quality than any textbook ever could.</p>
+							<p>In this post, I'll walk you through the real challenges of cleaning operational insurance data the kind of messy, inconsistent, real-world data that most tutorials conveniently skip. If you're working with data from production systems and not sanitized Kaggle datasets , this is for you.</p>
+							<p class="tools-header">Tools used:</p>
+							<p class="tools-item">Python: <a href="https://github.com/Dagem-H-Tewodros/Insurance-Risk-Modeling">GitHub</a></p>
+							<span class="image main"><img src="images/Data Cleaning.png" alt="" /></span>
+							<p><b>The 80/20 Rule of Data Science</b></p>
+							<p>Before diving into the technical details, let's acknowledge an uncomfortable truth: the greatest machine learning algorithm is useless if your data is garbage.</p>
+							<p>I've seen countless projects where data scientists rush to model building, only to discover later that their impressive accuracy scores were built on faulty foundations. Missing values treated as zeros. Duplicates inflating sample sizes. Categorical variables with a dozen variations of the same category.</p>
+							<p>This project forced me to slow down and get the fundamentals right. And honestly? The data cleaning phase taught me more about insurance business logic than any analysis could have.</p>
+						<p><b>The Raw Data Landscape</b></p>
+							<p><b>Inital Assessment</b></p>
+							<p>The dataset arrived as `MachineLearningRating_v3.txt` an export from an operational insurance database covering thousands of policies with claims, premiums, customer demographics, and vehicle details.</p>
+							<p>Initial inspection:</p>
+							<p>The output revealed:</p>
+							<ul>
+							<li>50+ columns covering policy details, customer demographics, vehicle characteristics, and claims data</li>
+							<li>Mixed data types: Objects where dates should be, numerics stored as strings</li>
+							<li>Missing values scattered throughout</li>
+							<li>Inconsistent formatting in categorical variables</li>
+							</ul>
+							<p>This was going to take work.</p>
+						<p><b>Challenge 1: Temporal Data Conversions</b></p>
+							<p><b>The Problem</b></p>
+							<p>The `TransactionMonth` column contained dates but was stored as object type (strings). This prevented any temporal analysis I couldn't sort by date, extract months, or analyze seasonal trends.</p>	
+							<p><b>The Solution</b></p>
+							<p>Converting to datetime is simple with pandas, but there's a catch: always verify the conversion worked correctly.</p>
+							<p><b>The Benfit</b></p>
+							<p>This simple transformation unlocked:</p>
+							<ul>
+							<li><strong>Seasonality analysis:</strong> Do claims spike in winter? Are more policies sold in certain months?</li>
+							<li><strong>Trend detection:</strong> Is the business growing or shrinking over time?</li>
+							<li><strong>Policy lifecycle tracking:</strong> How long between purchase and first claim?</li>
+							<li><strong>Time-based filters:</strong> Easily subset to specific date ranges</li>
+							</ul>
+							<p>Lesson: Don't skip data type conversion. Proper types enable proper analysis.</p>
+						<p><b>Challenge 2: Missing Gender values</b></p>
+							<p><b>The Problem </b></p>
+							<p>The `Gender` field was crucial for risk assessment, but many records showed "Not specified."</p>
+							<p>That's 130,000 records I couldn't use or could I?</p>
+							<p><b>The Insight</b></p>
+							<p>While exploring the data, I noticed the `Title` column: Mr, Mrs, Ms, Miss, Dr. These titles provide gender signals!</p>
+							<p>Most "Not specified" records had titles that strongly indicate gender.</p>
+							<p><b>The Solution </b></p>
+							<p>I created a rule-based imputation function:</p>
+							<p>The remaining 2,000 "Dr" records without gender information were dropped:</p>
+							<p><b>The Impact</b></p>
+							<p>This intelligent imputation:</p>
+							<ul>
+							<li>Recovered 128,000 records that would have been lost</li>
+							<li>Preserved data integrity: High-confidence imputations only</li>
+							<li>Maintained transparency: Clear rules for how imputation was done</li>
+							<li>Improved model quality: More training data = better models</li>
+							</ul>
+							<p>Lesson: Look for proxy variables that can fill gaps. Domain knowledge often reveals hidden signals in your data.</p>
+						<p><b>Challenge 3: Standardizing Categoricla Variables</b></p>
+							<p><b>The Nightmare Scenario </b></p>
+							<p>Categorical variables are the backbone of insurance analytics, but they were an absolute mess.</p>
+							<p>The Problem:</p>
+							<p>The same bank appeared as 12 different values due to formatting inconsistencies. Multiply this across all categorical columns, and you have a cardinality explosion that would destroy any model.</p>
+							<p>Why This Happens:</p>
+							<p>Operational databases accumulate formatting inconsistencies over years:</p>
+							<ul>
+							<li>Manual data entry with varying capitalization</li>
+							<li>System migrations that didn't clean legacy data</li>
+							<li>Different validation rules across different periods</li>
+							<li>Copy-paste errors from external sources</li>
+							</ul>
+							<p><b>The Solution: Comprehensive Text Cleaning</b></p>
+							<p><b>I developed a multi-stage text standardization pipeline:</b></p>
+								<ol>
+								<li><b>Stage 1: Handling True Missing Values</b></li>
+								<ul>
+								<li>First, unify all the different ways of representing "missing":</li>
+								<li>Now "missing" is consistent and can be analyzed as its own category.</li>
+								</ul>
+								<li><b>Stage 2: Text Standardization Function</b></li>
+								<ul>
+								<li>For the `CoverCategory` column (which had the worst formatting), I created a custom cleaning function:</li>
+								<li>Before cleaning:</li>
+								<ul>
+								<li>Comprehensive Cover: 45,000</li>
+								<li>comprehensive cover: 12,000</li>
+								<li>Comprehensive_Cover: 8,000</li>
+								<li>Comprehensive Cover: 3,000</li>
+								</ul>
+								<li>After cleaning:</li>
+								<ul>
+								<li>Comprehensive Cover: 68,000</li>
+								</ul>
+								</ul>
+								<li><b>Stage 3: Vectorized Cleaning for All Text Columns</b></li>
+								<ul>
+								<li>After validating the approach on one column, I applied it across the board using pandas vectorized operations for speed:</li>
+								<li>This vectorized approach is much faster than using `apply()` on large datasets.</li>
+								</ul>
+								</ol> 
+							<p><b>The Impact</b></p>
+							<p><b>Cardinality Reduction:</b></p>
+							<p>Benefits:</p>
+							<ul>
+							<li>Accurate grouping: Aggregations now work correctly</li>
+							<li>Reduced dimensionality: Fewer unique values = fewer features after encoding</li>
+							<li>Better string matching: Filters and joins work reliably</li>
+							<li>Improved model performance: Less noise in categorical variables</li>
+							</ul>
+							<p><b>Code Performance Comparison</b></p>
+							<ul>
+							<li>Vectorized operations are 14x faster!</li>
+							<li>Lesson: Standardize categorical variables early. The time invested pays off in every downstream analysis.</li>
+							</ul>
+						<p><b>Challenge 4: The Zero Permium Issue</b></p>
+							<p><b>The Discovery</b></p>
+							<ul>
+							<li>One of the most alarming discoveries came when validating numerical fields:</li>
+							<li>376,719 policies with zero premium. That's not a typo. Over one-third of the dataset had no premium amount.</li>
+							</ul>
+							<p><b>The Investigation</b></p>
+							<p>Initial panic subsided as I investigated systematically:</p>
+								<p><b>Question 1: Are these data entry errors?</b></p>
+								<ul>
+								<li>The absence of negative values suggested data entry controls were working. But zero premiums?</li>
+								</ul>
+								<p>Question 2: Could these be legitimate?</p>
+								<p>Possible legitimate scenarios:</p>
+								<ul>
+								<li>Promotional policies: Free insurance for a limited time</li>
+								<li>Complementary coverage: Free add-ons to existing policies</li>
+								<li>Waived premiums: Customer loyalty programs</li>
+								<li>Pending policies: Not yet priced by underwriters</li>
+								<li>Cancelled policies: Reversed before charging</li>
+								</ul>
+								<p>Question 3: What about policies with claims but no premium?</p>
+								<ul>
+								<li>This is where it gets problematic:</li>
+								<li>45,632 policies paid out claims without collecting premiums. This violates basic insurance logic you can't claim on a policy you didn't pay for.</li>
+								</ul>
+							<p><b>The Solution: Data Quality Flags</b></p>
+							<p>Rather than deleting these records immediately, I created a flag for filtering:</p>
+							<p>This approach:</p>
+							<ul>
+							<li>Preserves original data: Nothing is deleted, just flagged</li>
+							<li>Documents the decision: Clear logic for what's considered invalid</li>
+							<li>Enables investigation: Business analysts can review flagged records</li>
+							<li>Maintains flexibility: Easy to adjust the filter criteria later</li>
+							</ul>
+							<p><b>Business Consultation </b></p>
+							<p>I documented this finding and recommended:</p>
+							<ol>
+							<li>Review with actuarial team: Understand legitimate zero-premium scenarios</li>
+							<li>System investigation: Check if these are export artifacts</li>
+							<li>Policy review: Manually inspect sample of flagged records</li>
+							<li>Process improvement: Add validation at point of data entry</li>
+							</ol>
+							<p>Lesson: When you find anomalies, don't just delete them. Investigate, document, and involve domain experts. The anomaly might reveal a business process issue, not just a data issue.</p>
+						
+						<p><b>The Clean Dataset</b></p>
+							<p><b>Final Transformation Summary</b></p>
+							<p>After completing all cleaning steps, here's what changed:</p>
+							<ul>
+							<li>Temporal Data: All dates properly formatted as datetime64[ns]</li>
+							<li>Gender Field: 98% complete with intelligent imputation</li>
+							<li>Categorical Variables: Standardized formatting, 40% average cardinality reduction</li>
+							<li>Numerical Validation: No negative values, invalid combinations flagged</li>
+							<li>Missing Values: 95% reduction through standardization and imputation</li>
+							<li>Data Quality Flags: InvalidPremiumFlag for analytical filtering</li>
+							<li>Output: `cleaned_dataset_insurance.csv`  ready for exploratory data analysis</li>
+							</ul>
+
+							<p><b>File Size Comparison</b></p>
+							<p>The cleaned file is 36% smaller due to:</p>
+							<ul>
+							<li>Standardized text (fewer unique strings)</li>
+							<li>Removed duplicate whitespace</li>
+							<li>More efficient CSV encoding</li>
+							</ul>
+
+						<p><b>Lessons for Data Cleaning</b></p>
+							<ol>
+							<li><b>Document Everthing</b></li>
+							<ul>
+							<li>I maintained a cleaning log documenting every decision:</li>
+							<li>Why this matters: Six months later, when someone asks "Why did you handle gender this way?" you have a clear answer.</li>
+							</ul>
+							
+							<li><b>Presevre Original Data </b></li>
+							<ul>
+							<li>Golden rule: Never overwrite source files.</li>
+							</ul>
+
+							<li><b>Understand the Domian</b></li>
+							<ul>
+							<p>Insurance-specific knowledge was crucial:</p>
+							<li>Zero premiums: Without domain knowledge, I might have deleted all of them</li>
+							<li>Gender from Title: Required understanding insurance data collection practices</li>
+							<li>Invalid combinations: Knowing claims require premiums guided validation</li>
+							<li>Action: Talk to business users, actuaries, and underwriters before making cleaning decisions.</li>
+							</ul>
+
+							<li><b>Validate Assumptions</b></li>
+							<ul>
+							<li>Every cleaning operation includes validation:</li>
+							</ul>
+
+							<li><b>Use Version Control</b></li>
+							<ul>
+							<li>Track your cleaning scripts with git:</li>
+							</ul>
+							<li><b>Benefits</b></li>
+							<ul>
+							<li>Track what changed and when</li>
+							<li>Revert problematic changes</li>
+							<li>Share cleaning logic with team</li>
+							<li>Reproduce results exactly</li>
+							</ul>
+
+							<li><b>Vectorize Operations</b></li>
+							<ul>
+							<li>For large datasets, vectorized operations are essential:</li>
+							<li>Performance tip: Use `.str` accessor methods instead of `apply()` whenever possible.</li>
+							</ul>
+
+							<li><b>Build Reusable Functions</b></li>
+							<ul>
+							<li>Don't repeat cleaning logic. Build reusable functions:</li>
+							</ul>
+
+							<li><b>Test with Subsets First</b></li>
+							<ul>
+							<li>Before running cleaning on the full dataset, test on a subset:</li>
+							</ul>
+							</ol>
+						
+						<p><b>What's Next</b></p>
+						<p>With clean, standardized data now available, we can finally move to the fun part: exploratory data analysis.</p>
+						<p>In the next post, I'll show you:</p>
+						<ul>
+						<li>How provincial variations in claim patterns emerged from the data</li>
+						<li>Which vehicle characteristics predict highest risk</li>
+						<li>Why customer demographics matter more than you'd think</li>
+						<li>The statistical tests that validated our hypotheses</li>
+						<li>The patterns we'll uncover will directly inform the modeling strategy—but none of it would be possible without the solid foundation of clean data.</li>
+						</ul>
+
+						<p><b>Final Thoughts</b></p>
+						<ul>
+						<li>Data cleaning isn't glamorous. It doesn't make for impressive conference presentations. But it's absolutely critical.</li>
+						<li>The 376,719 zero-premium records could have silently destroyed every model I built. The inconsistent categorical formatting would have created artificial features that confused algorithms. The missing gender values would have forced me to discard valuable data.</li>
+						<li>Time spent cleaning: ~3 weeks</li>
+						<li>Time saved in debugging bad models: Immeasurable</li>
+						<li>If you take one thing from this post, let it be this: respect the cleaning phase. Rush through it, and you'll pay for it later. Do it right, and everything that follows becomes easier.</li>
+						<li>Your models are only as good as your data. Clean data isn't everything, but everything is nothing without clean data.</li>
+						</ul>
+
+						<p><b>Connect & Continue</b></p>
+						<ul>
+						<li>Want the code? The complete cleaning pipeline is available on my GitHub repository.</li>
+						<li>Next in the series: Exploratory Data Analysis - uncovering hidden patterns in clean insurance data.</li>
+						<li>Tag*: #DataCleaning #DataQuality #Insurance #Python #Pandas #DataScience #DataPreprocessing</li>
+						<li>Read Time: 12 minutes</li>
+						</ul>
+
+						</div>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<div class="inner">
+							<section>
+								<h2>Get in touch</h2>
+								<form method="post" action="https://formspree.io/f/mrbzwany">
+									<div class="fields">
+										<div class="field half">
+											<input type="text" name="name" id="name" placeholder="Name" required />
+										</div>
+										<div class="field half">
+											<input type="email" name="email" id="email" placeholder="Email" required />
+										</div>
+										<div class="field">
+											<textarea name="message" id="message" placeholder="Message" required></textarea>
+										</div>
+									</div>
+									<ul class="actions">
+										<li><input type="submit" value="Send" class="primary" /></li>
+									</ul>
+								</form>
+							</section>
+							<section>
+								<h2>Follow</h2>
+								<ul class="icons">
+									<li><a href="https://www.linkedin.com/in/dagem-tewodros-414604302/" class="icon brands style2 fa-linkedin"><span class="label">Linked in</span></a></li>
+									<li><a href="https://github.com/Dagem-H-Tewodros" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
+									<li><a href="mailto:dagem.h.tewodros@gmail.com" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
+								</ul>
+							</section>
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved</li></li>
+							</ul>
+						</div>
+					</footer>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script>
+  				hljs.highlightAll();
+			</script>
+
+	</body>
+</html>
